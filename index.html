@@ -1,391 +1,1099 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>🏠 家庭金币系统</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>家庭金币 - 孩子端</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* ====== 全局样式 ====== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
             background: #f0f2f5;
             padding: 16px;
             padding-bottom: 80px;
+            min-height: 100vh;
         }
-        .container { max-width: 500px; margin: 0 auto; }
+
+        /* ====== 顶部标题 ====== */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 16px;
-            padding: 24px;
             text-align: center;
-            margin-bottom: 20px;
+            padding: 10px 0 6px 0;
+            font-size: 22px;
+            font-weight: bold;
+            color: #2d3436;
         }
-        .header h1 { font-size: 22px; }
-        .header p { opacity: 0.8; font-size: 14px; margin-top: 4px; }
-        .card {
-            background: white;
+        .header .highlight {
+            color: #00b894;
+        }
+        .header .sub {
+            font-size: 12px;
+            color: #b2bec3;
+            font-weight: normal;
+            display: block;
+        }
+
+        /* ====== 云端连接状态 ====== */
+        .connection-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #636e72;
+            padding: 6px 0;
+            margin-bottom: 6px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .connection-status .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .connection-status .dot.online {
+            background: #00b894;
+            animation: pulse 2s infinite;
+        }
+        .connection-status .dot.offline {
+            background: #e17055;
+        }
+        .connection-status .dot.checking {
+            background: #fdcb6e;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* ====== 统计卡片 ====== */
+        .stats-row {
+            display: flex;
+            gap: 10px;
+            margin: 8px 0 16px 0;
+        }
+        .stats-row .stat-card {
+            flex: 1;
+            background: #fff;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        .stats-row .stat-card .num {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d3436;
+        }
+        .stats-row .stat-card .label {
+            font-size: 12px;
+            color: #b2bec3;
+            margin-top: 2px;
+        }
+        .stats-row .stat-card.orange .num {
+            color: #fdcb6e;
+        }
+        .stats-row .stat-card.green .num {
+            color: #00b894;
+        }
+        .stats-row .stat-card.blue .num {
+            color: #6c5ce7;
+        }
+
+        /* ====== Tab切换 ====== */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        .tabs .tab {
+            flex: 1;
+            padding: 10px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: none;
+            color: #b2bec3;
+        }
+        .tabs .tab.active {
+            background: #6c5ce7;
+            color: #fff;
+        }
+        .tabs .tab:active {
+            transform: scale(0.95);
+        }
+
+        /* ====== 内容区 ====== */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ====== 任务管理 ====== */
+        .add-task-form {
+            background: #fff;
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
-        .card-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 12px;
-        }
-        .user-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-        .user-item {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .user-item.selected {
-            border-color: #667eea;
-            background: #f0f0ff;
-        }
-        .user-item .name { font-size: 16px; font-weight: 600; color: #333; }
-        .user-item .coins { font-size: 22px; font-weight: bold; color: #f57c00; }
-        .user-item .coins small { font-size: 12px; color: #999; }
-        .task-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-        .task-btn {
-            background: #e3f2fd;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .task-btn:active { transform: scale(0.95); }
-        .task-btn .task-name { font-size: 14px; font-weight: 500; color: #1565c0; }
-        .task-btn .task-coins { font-size: 12px; color: #f57c00; }
-        .recharge-section {
+        .add-task-form .form-row {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
-        .recharge-btn {
+        .add-task-form .form-row input,
+        .add-task-form .form-row textarea {
+            padding: 10px 12px;
+            border: 2px solid #dfe6e9;
+            border-radius: 8px;
+            font-size: 14px;
             flex: 1;
-            min-width: 60px;
-            background: #43a047;
-            color: white;
+            min-width: 120px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .add-task-form .form-row input:focus,
+        .add-task-form .form-row textarea:focus {
+            border-color: #6c5ce7;
+        }
+        .add-task-form .form-row textarea {
+            flex-basis: 100%;
+            min-height: 50px;
+            resize: vertical;
+        }
+        .add-task-form .form-row .submit-btn {
+            padding: 10px 24px;
             border: none;
             border-radius: 8px;
-            padding: 12px;
+            background: #00b894;
+            color: #fff;
             font-size: 14px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
-        .recharge-btn:active { transform: scale(0.95); }
-        .recharge-btn.custom { background: #667eea; }
-        .recharge-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .log-list { max-height: 200px; overflow-y: auto; }
-        .log-item {
+        .add-task-form .form-row .submit-btn:active {
+            transform: scale(0.95);
+        }
+
+        .task-item-admin {
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             display: flex;
             justify-content: space-between;
-            padding: 6px 0;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
+            align-items: center;
         }
-        .log-item .positive { color: #43a047; }
-        .log-item .negative { color: #e53935; }
-        .log-item .log-time { color: #999; font-size: 12px; }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 12px 24px;
+        .task-item-admin .info .name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2d3436;
+        }
+        .task-item-admin .info .desc {
+            font-size: 12px;
+            color: #b2bec3;
+        }
+        .task-item-admin .info .price {
+            color: #fdcb6e;
+            font-weight: 600;
+        }
+        .task-item-admin .actions {
+            display: flex;
+            gap: 6px;
+        }
+        .task-item-admin .actions button {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .task-item-admin .actions button:active {
+            transform: scale(0.95);
+        }
+        .task-item-admin .actions .btn-del {
+            background: #fab1a0;
+            color: #e17055;
+        }
+        .task-item-admin .actions .btn-toggle {
+            background: #dfe6e9;
+            color: #636e72;
+        }
+        .task-item-admin .actions .btn-toggle.active {
+            background: #00b894;
+            color: #fff;
+        }
+
+        /* ====== 订单管理 ====== */
+        .order-item-admin {
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .order-item-admin .info .name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2d3436;
+        }
+        .order-item-admin .info .sub {
+            font-size: 12px;
+            color: #b2bec3;
+        }
+        .order-item-admin .info .sub .user-tag {
+            color: #6c5ce7;
+            font-weight: 600;
+        }
+        .order-item-admin .actions button {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .order-item-admin .actions button:active {
+            transform: scale(0.95);
+        }
+        .order-item-admin .actions .btn-done {
+            background: #00b894;
+            color: #fff;
+        }
+        .order-item-admin .actions .btn-done:disabled {
+            background: #dfe6e9;
+            color: #b2bec3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ====== 充值管理 ====== */
+        .recharge-form {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        .recharge-form .form-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .recharge-form .form-row select,
+        .recharge-form .form-row input {
+            padding: 10px 12px;
+            border: 2px solid #dfe6e9;
             border-radius: 8px;
             font-size: 14px;
+            flex: 1;
+            min-width: 100px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .recharge-form .form-row select:focus,
+        .recharge-form .form-row input:focus {
+            border-color: #fdcb6e;
+        }
+        .recharge-form .form-row .recharge-btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #fdcb6e;
+            color: #2d3436;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .recharge-form .form-row .recharge-btn:active {
+            transform: scale(0.95);
+        }
+        .recharge-form .tip {
+            font-size: 13px;
+            color: #b2bec3;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .recharge-form .tip .highlight {
+            color: #e17055;
+            font-weight: 600;
+        }
+
+        /* ====== 充值记录 ====== */
+        .recharge-record {
+            background: #fff;
+            border-radius: 12px;
+            padding: 10px 16px;
+            margin-bottom: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .recharge-record .info .user {
+            font-weight: 600;
+            color: #2d3436;
+        }
+        .recharge-record .info .detail {
+            font-size: 12px;
+            color: #b2bec3;
+        }
+        .recharge-record .info .detail .coins {
+            color: #fdcb6e;
+            font-weight: 600;
+        }
+        .recharge-record .time {
+            font-size: 12px;
+            color: #b2bec3;
+        }
+
+        /* ====== 空状态 ====== */
+        .empty-state {
+            text-align: center;
+            padding: 30px 0;
+            color: #b2bec3;
+        }
+        .empty-state .icon {
+            font-size: 36px;
+            margin-bottom: 6px;
+        }
+
+        /* ====== Toast ====== */
+        .toast {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d3436;
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            z-index: 300;
             display: none;
-            z-index: 999;
             max-width: 90%;
             text-align: center;
         }
-        .toast.show { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        .loading { text-align: center; color: #999; padding: 20px; }
-        .empty { text-align: center; color: #ccc; padding: 10px; font-size: 14px; }
-        .member-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-        .member-chip {
-            padding: 4px 14px;
-            border-radius: 16px;
-            border: 2px solid #ddd;
-            background: white;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
+        .toast.show {
+            display: block;
+            animation: fadeInDown 0.3s ease;
         }
-        .member-chip.active { border-color: #667eea; background: #f0f0ff; }
-        .qr-placeholder {
-            background: #f5f5f5;
-            border-radius: 8px;
-            padding: 16px;
+        .toast.success {
+            background: #00b894;
+        }
+        .toast.error {
+            background: #e17055;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* ====== 底部导航 ====== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            display: flex;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+            padding: 8px 0;
+            z-index: 100;
+        }
+        .bottom-nav .nav-item {
+            flex: 1;
             text-align: center;
-            font-size: 14px;
-            color: #666;
-            border: 2px dashed #ddd;
-            margin-top: 10px;
-        }
-        .qr-placeholder .big { font-size: 48px; display: block; margin-bottom: 8px; }
-        .copy-btn {
-            background: #eee;
-            border: none;
-            border-radius: 4px;
-            padding: 2px 10px;
-            font-size: 12px;
+            padding: 6px 0;
+            color: #b2bec3;
+            font-size: 11px;
             cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: none;
         }
-        .copy-btn:active { background: #ddd; }
+        .bottom-nav .nav-item.active {
+            color: #6c5ce7;
+        }
+        .bottom-nav .nav-item .nav-icon {
+            font-size: 22px;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .bottom-nav .nav-item:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- 头部 -->
+    <!-- ====== Toast提示 ====== -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ====== 顶部标题 ====== -->
     <div class="header">
-        <h1>🏠 家庭金币系统</h1>
-        <p>家长端 · 选择成员进行操作</p>
+        🎮 家庭<span class="highlight">金币</span>管家
+        <span class="sub">孩子端 · 发布任务 · 管理订单 · 确认充值</span>
     </div>
 
-    <!-- 选择成员 -->
-    <div class="card">
-        <div class="card-title">👤 当前操作成员</div>
-        <div class="member-selector" id="memberSelector">
-            <div class="loading">加载中...</div>
+    <!-- ====== 云端连接状态 ====== -->
+    <div class="connection-status" id="connectionStatus">
+        <span class="dot checking" id="statusDot"></span>
+        <span id="statusText">正在连接云端...</span>
+        <span id="statusTime" style="color:#b2bec3;font-size:11px;"></span>
+    </div>
+
+    <!-- ====== 统计卡片 ====== -->
+    <div class="stats-row">
+        <div class="stat-card orange">
+            <div class="num" id="statTasks">0</div>
+            <div class="label">📌 任务数</div>
+        </div>
+        <div class="stat-card green">
+            <div class="num" id="statOrders">0</div>
+            <div class="label">📦 待完成</div>
+        </div>
+        <div class="stat-card blue">
+            <div class="num" id="statRecharge">0</div>
+            <div class="label">💳 充值记录</div>
         </div>
     </div>
 
-    <!-- 成员余额 -->
-    <div class="card">
-        <div class="card-title">💰 所有成员余额</div>
-        <div class="user-grid" id="userGrid">
-            <div class="loading">加载中...</div>
-        </div>
+    <!-- ====== Tab切换 ====== -->
+    <div class="tabs">
+        <button class="tab active" data-tab="tabTasks" onclick="switchTab(this)">📌 任务</button>
+        <button class="tab" data-tab="tabOrders" onclick="switchTab(this)">📦 订单</button>
+        <button class="tab" data-tab="tabRecharge" onclick="switchTab(this)">💳 充值</button>
     </div>
 
-    <!-- 充值 -->
-    <div class="card">
-        <div class="card-title">💳 充值（生成收款码）</div>
-        <div class="recharge-section">
-            <button class="recharge-btn" onclick="recharge(10)">10元</button>
-            <button class="recharge-btn" onclick="recharge(20)">20元</button>
-            <button class="recharge-btn" onclick="recharge(50)">50元</button>
-            <button class="recharge-btn custom" onclick="customRecharge()">自定义</button>
-        </div>
-        <div id="qrDisplay" class="qr-placeholder" style="display:none;">
-            <span class="big">📱</span>
-            <div>请使用微信扫码支付</div>
-            <div style="font-size:20px;font-weight:bold;color:#333;" id="qrAmount"></div>
-            <div style="font-size:12px;color:#999;margin-top:4px;" id="qrNote"></div>
-            <div style="margin-top:8px;font-size:12px;color:#e53935;">⚠️ 支付后稍等几秒，金币自动到账</div>
-        </div>
-    </div>
-
-    <!-- 任务 -->
-    <div class="card">
-        <div class="card-title">🧹 完成任务赚金币</div>
-        <div class="task-grid" id="taskGrid">
-            <div class="loading">加载中...</div>
-        </div>
-    </div>
-
-    <!-- 最近记录 -->
-    <div class="card">
-        <div class="card-title">📋 最近操作记录</div>
-        <div class="log-list" id="logList">
-            <div class="loading">加载中...</div>
-        </div>
-    </div>
-</div>
-
-<!-- Toast 提示 -->
-<div class="toast" id="toast"></div>
-
-<script>
-// ============================================================
-// ⚠️ 改成你自己的 Supabase 信息！
-// ============================================================
-const SUPABASE_URL = "https://epwcigpmkjocdpbljkjr.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwd2NpZ3Bta2pvY2RwYmxqa2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzI1MjMsImV4cCI6MjA5ODkwODUyM30.8-6OFgcPfm3HaUm3fNmlT1ceGsAtkbJ2e1Ih4KNuDN0";
-// ============================================================
-
-let currentUser = "我";  // 默认选中"我"
-
-// ---------- 工具函数 ----------
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(t._timer);
-    t._timer = setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-async function supabaseFetch(path, options = {}) {
-    const url = SUPABASE_URL + path;
-    const headers = {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json',
-    };
-    const resp = await fetch(url, { ...options, headers });
-    if (!resp.ok) throw new Error(await resp.text());
-    return resp.json();
-}
-
-// ---------- 加载成员列表 ----------
-async function loadUsers() {
-    try {
-        const data = await supabaseFetch('/rest/v1/users?order=coins.desc');
-        const grid = document.getElementById('userGrid');
-        if (data.length === 0) {
-            grid.innerHTML = '<div class="empty">暂无成员</div>';
-            return;
-        }
-        grid.innerHTML = data.map(u => `
-            <div class="user-item ${u.name === currentUser ? 'selected' : ''}" onclick="selectMember('${u.name}')">
-                <div class="name">${u.name}</div>
-                <div class="coins">${u.coins} <small>金币</small></div>
+    <!-- ============================================================ -->
+    <!--  TAB 1: 任务管理 -->
+    <!-- ============================================================ -->
+    <div class="tab-content active" id="tabTasks">
+        <!-- 添加任务 -->
+        <div class="add-task-form">
+            <div class="form-row">
+                <input type="text" id="taskNameInput" placeholder="任务名称（如：洗碗）" style="flex:1.5;">
+                <input type="number" id="taskPriceInput" placeholder="价格（金币）" style="flex:1;">
             </div>
-        `).join('');
-
-        // 更新成员选择器
-        const selector = document.getElementById('memberSelector');
-        selector.innerHTML = data.map(u => `
-            <span class="member-chip ${u.name === currentUser ? 'active' : ''}" onclick="selectMember('${u.name}')">${u.name}</span>
-        `).join('');
-    } catch (e) {
-        document.getElementById('userGrid').innerHTML = '<div class="empty">加载失败</div>';
-    }
-}
-
-// ---------- 选择成员 ----------
-function selectMember(name) {
-    currentUser = name;
-    loadUsers();
-    loadLogs();
-}
-
-// ---------- 加载任务 ----------
-async function loadTasks() {
-    try {
-        const data = await supabaseFetch('/rest/v1/tasks?is_active=eq.true&order=created_at.asc');
-        const grid = document.getElementById('taskGrid');
-        if (data.length === 0) {
-            grid.innerHTML = '<div class="empty">暂无任务，请联系管理员添加</div>';
-            return;
-        }
-        grid.innerHTML = data.map(t => `
-            <button class="task-btn" onclick="completeTask(${t.id}, '${t.name}', ${t.coins})">
-                <div class="task-name">${t.name}</div>
-                <div class="task-coins">+${t.coins} 金币</div>
-            </button>
-        `).join('');
-    } catch (e) {
-        document.getElementById('taskGrid').innerHTML = '<div class="empty">加载失败</div>';
-    }
-}
-
-// ---------- 完成任务 ----------
-async function completeTask(taskId, taskName, coins) {
-    if (!confirm(`${currentUser} 确认完成「${taskName}」？`)) return;
-    try {
-        // 1. 更新用户金币
-        await supabaseFetch('/rest/v1/users?name=eq.' + encodeURIComponent(currentUser), {
-            method: 'PATCH',
-            body: JSON.stringify({ coins: `coins + ${coins}` }),
-            headers: { 'Prefer': 'return=minimal' }
-        });
-        // 2. 记录交易
-        await supabaseFetch('/rest/v1/transactions', {
-            method: 'POST',
-            body: JSON.stringify({
-                user_name: currentUser,
-                amount: coins,
-                reason: `完成任务：${taskName}`
-            })
-        });
-        showToast(`✅ ${currentUser} 完成「${taskName}」+${coins}金币`);
-        loadUsers();
-        loadLogs();
-    } catch (e) {
-        showToast('❌ 操作失败：' + e.message);
-    }
-}
-
-// ---------- 充值 ----------
-async function recharge(amount) {
-    const qrDiv = document.getElementById('qrDisplay');
-    document.getElementById('qrAmount').textContent = `💰 ${amount}.00 元`;
-    document.getElementById('qrNote').textContent = `收款方：${currentUser}的家长`;
-    qrDiv.style.display = 'block';
-    showToast(`📱 请扫码支付 ${amount}元，支付后金币自动到账`);
-}
-
-function customRecharge() {
-    const val = prompt('请输入充值金额（元）：', '30');
-    if (val && !isNaN(val) && parseFloat(val) > 0) {
-        recharge(parseFloat(val));
-    } else {
-        showToast('请输入有效金额');
-    }
-}
-
-// ---------- 加载记录 ----------
-async function loadLogs() {
-    try {
-        const data = await supabaseFetch(
-            `/rest/v1/transactions?user_name=eq.${encodeURIComponent(currentUser)}&order=created_at.desc&limit=20`
-        );
-        const list = document.getElementById('logList');
-        if (data.length === 0) {
-            list.innerHTML = '<div class="empty">暂无记录</div>';
-            return;
-        }
-        list.innerHTML = data.map(t => `
-            <div class="log-item">
-                <span>${t.reason}</span>
-                <span>
-                    <span class="${t.amount > 0 ? 'positive' : 'negative'}">${t.amount > 0 ? '+' : ''}${t.amount}</span>
-                    <span class="log-time">${t.created_at ? t.created_at.replace('T', ' ').slice(0, 16) : ''}</span>
-                </span>
+            <div class="form-row" style="margin-top:8px;">
+                <textarea id="taskDescInput" placeholder="任务描述（可选）"></textarea>
             </div>
-        `).join('');
-    } catch (e) {
-        document.getElementById('logList').innerHTML = '<div class="empty">加载失败</div>';
-    }
-}
+            <div class="form-row" style="margin-top:8px;">
+                <button class="submit-btn" onclick="addTask()">➕ 发布任务</button>
+            </div>
+        </div>
 
-// ---------- 自动刷新 ----------
-function refreshAll() {
-    loadUsers();
-    loadTasks();
-    loadLogs();
-}
+        <!-- 任务列表 -->
+        <div id="taskListAdmin">
+            <div class="empty-state">
+                <div class="icon">📭</div>
+                <div>暂无任务，发布一个吧！</div>
+            </div>
+        </div>
+    </div>
 
-// ---------- 初始化 ----------
-refreshAll();
-// 每30秒自动刷新
-setInterval(refreshAll, 30000);
-</script>
+    <!-- ============================================================ -->
+    <!--  TAB 2: 订单管理 -->
+    <!-- ============================================================ -->
+    <div class="tab-content" id="tabOrders">
+        <div id="orderListAdmin">
+            <div class="empty-state">
+                <div class="icon">📭</div>
+                <div>暂无订单</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!--  TAB 3: 充值管理 -->
+    <!-- ============================================================ -->
+    <div class="tab-content" id="tabRecharge">
+        <!-- 确认充值 -->
+        <div class="recharge-form">
+            <div class="form-row">
+                <select id="rechargeUserSelect">
+                    <option value="">选择家长</option>
+                </select>
+                <input type="number" id="rechargeAmountInput" placeholder="充值金额（元）" step="0.01" min="0.01">
+            </div>
+            <div class="form-row" style="margin-top:8px;">
+                <button class="recharge-btn" onclick="confirmRecharge()">💰 确认充值</button>
+            </div>
+            <div class="tip">
+                💡 听到微信收款播报后，<span class="highlight">选择家长、输入金额</span>，点击确认即可自动加金币<br>
+                ⏱️ 1元 = 10金币 · 建议10分钟内完成确认
+            </div>
+        </div>
+
+        <!-- 充值记录 -->
+        <div id="rechargeRecordList">
+            <div class="empty-state">
+                <div class="icon">📭</div>
+                <div>暂无充值记录</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== 底部导航 ====== -->
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="switchNavTab(this, 'tabTasks')">
+            <span class="nav-icon">📌</span>
+            任务
+        </button>
+        <button class="nav-item" onclick="switchNavTab(this, 'tabOrders')">
+            <span class="nav-icon">📦</span>
+            订单
+        </button>
+        <button class="nav-item" onclick="switchNavTab(this, 'tabRecharge')">
+            <span class="nav-icon">💳</span>
+            充值
+        </button>
+    </div>
+
+    <script>
+        // ================================================================
+        //  ⚙️  配置（已替换成你的 Supabase 密钥）
+        // ================================================================
+        const SUPABASE_URL = 'https://wlqoojeobfwylltsvfiv.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndscW9vamVvYmZ3eWxsdHN2Zml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzk4ODUsImV4cCI6MjA5ODkxNTg4NX0.hwlB_SmprL_Gs7Ns_n086ZrCx314a61H2qmlLRKl1Bs';
+
+        // ================================================================
+        //  全局状态
+        // ================================================================
+        let allUsers = [];
+        let allTasks = [];
+        let allOrders = [];
+        let allTransactions = [];
+        let refreshTimer = null;
+        let isOnline = false;
+
+        // ================================================================
+        //  页面加载
+        // ================================================================
+        document.addEventListener('plusready', function() {
+            console.log('✅ 孩子端启动');
+            updateConnectionStatus('checking', '正在连接云端...');
+            checkConnection();
+            loadAllData();
+            refreshTimer = setInterval(function() {
+                checkConnection();
+                loadAllData();
+            }, 15000);
+        });
+
+        // ================================================================
+        //  检查云端连接状态
+        // ================================================================
+        async function checkConnection() {
+            try {
+                const resp = await fetch(SUPABASE_URL + '/rest/v1/users?limit=1', {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                    }
+                });
+                if (resp.ok) {
+                    isOnline = true;
+                    updateConnectionStatus('online', '☁️ 云端已连接');
+                } else {
+                    isOnline = false;
+                    updateConnectionStatus('offline', '⚠️ 云端连接失败');
+                }
+            } catch (e) {
+                isOnline = false;
+                updateConnectionStatus('offline', '⚠️ 云端连接失败');
+                console.error('连接检查失败：', e);
+            }
+        }
+
+        // ================================================================
+        //  更新连接状态UI
+        // ================================================================
+        function updateConnectionStatus(status, text) {
+            const dot = document.getElementById('statusDot');
+            const textEl = document.getElementById('statusText');
+            const timeEl = document.getElementById('statusTime');
+            dot.className = 'dot ' + status;
+            textEl.textContent = text;
+            timeEl.textContent = new Date().toLocaleTimeString();
+        }
+
+        // ================================================================
+        //  加载所有数据
+        // ================================================================
+        async function loadAllData() {
+            await Promise.all([
+                loadUsers(),
+                loadTasks(),
+                loadOrders(),
+                loadTransactions()
+            ]);
+            updateStats();
+            renderTasks();
+            renderOrders();
+            renderRechargeRecords();
+            populateUserSelect();
+        }
+
+        // ================================================================
+        //  加载用户列表
+        // ================================================================
+        async function loadUsers() {
+            try {
+                const resp = await fetch(SUPABASE_URL + '/rest/v1/users?select=*&order=name.asc', {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                    }
+                });
+                allUsers = await resp.json();
+            } catch (e) {
+                console.error('加载用户失败：', e);
+            }
+        }
+
+        // ================================================================
+        //  加载任务列表
+        // ================================================================
+        async function loadTasks() {
+            try {
+                const resp = await fetch(SUPABASE_URL + '/rest/v1/tasks?select=*&order=created_at.desc', {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                    }
+                });
+                allTasks = await resp.json();
+            } catch (e) {
+                console.error('加载任务失败：', e);
+            }
+        }
+
+        // ================================================================
+        //  加载订单列表
+        // ================================================================
+        async function loadOrders() {
+            try {
+                const resp = await fetch(SUPABASE_URL +
+                    '/rest/v1/orders?select=*,users(name),tasks(name)&order=created_at.desc', {
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                        }
+                    });
+                allOrders = await resp.json();
+            } catch (e) {
+                console.error('加载订单失败：', e);
+            }
+        }
+
+        // ================================================================
+        //  加载充值记录
+        // ================================================================
+        async function loadTransactions() {
+            try {
+                const resp = await fetch(SUPABASE_URL +
+                    '/rest/v1/transactions?select=*,users(name)&order=created_at.desc&limit=50', {
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                        }
+                    });
+                allTransactions = await resp.json();
+            } catch (e) {
+                console.error('加载充值记录失败：', e);
+            }
+        }
+
+        // ================================================================
+        //  更新统计
+        // ================================================================
+        function updateStats() {
+            document.getElementById('statTasks').textContent = allTasks.filter(t => t.is_active).length;
+            document.getElementById('statOrders').textContent = allOrders.filter(o => o.status === 'pending').length;
+            document.getElementById('statRecharge').textContent = allTransactions.length;
+        }
+
+        // ================================================================
+        //  填充用户选择下拉
+        // ================================================================
+        function populateUserSelect() {
+            const select = document.getElementById('rechargeUserSelect');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">选择家长</option>';
+            for (let u of allUsers) {
+                select.innerHTML += `<option value="${u.id}">${u.name}（余额：${u.balance}）</option>`;
+            }
+            if (currentVal) select.value = currentVal;
+        }
+
+        // ================================================================
+        //  Tab切换
+        // ================================================================
+        function switchTab(btn) {
+            document.querySelectorAll('.tabs .tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const tabId = btn.dataset.tab;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            // 同步底部导航
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.bottom-nav .nav-item[data-tab="${tabId}"]`)?.classList.add('active');
+        }
+
+        function switchNavTab(btn, tabId) {
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.tabs .tab').forEach(b => {
+                b.classList.toggle('active', b.dataset.tab === tabId);
+            });
+        }
+
+        // ================================================================
+        //  添加任务
+        // ================================================================
+        async function addTask() {
+            const name = document.getElementById('taskNameInput').value.trim();
+            const price = parseInt(document.getElementById('taskPriceInput').value);
+            const description = document.getElementById('taskDescInput').value.trim();
+
+            if (!name) { showToast('⚠️ 请输入任务名称', 'error'); return; }
+            if (!price || price <= 0) { showToast('⚠️ 请输入有效价格', 'error'); return; }
+
+            try {
+                const resp = await fetch(SUPABASE_URL + '/rest/v1/tasks', {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        description: description,
+                        price: price,
+                        is_active: true
+                    })
+                });
+                const data = await resp.json();
+                if (data && data.length > 0) {
+                    showToast('✅ 任务发布成功！', 'success');
+                    document.getElementById('taskNameInput').value = '';
+                    document.getElementById('taskPriceInput').value = '';
+                    document.getElementById('taskDescInput').value = '';
+                    await loadTasks();
+                    renderTasks();
+                    updateStats();
+                }
+            } catch (e) {
+                console.error('添加任务失败：', e);
+                showToast('❌ 发布失败，请重试', 'error');
+            }
+        }
+
+        // ================================================================
+        //  删除/切换任务状态
+        // ================================================================
+        async function toggleTask(id, currentStatus) {
+            try {
+                await fetch(SUPABASE_URL + '/rest/v1/tasks?id=eq.' + id, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ is_active: !currentStatus })
+                });
+                await loadTasks();
+                renderTasks();
+                updateStats();
+                showToast('✅ 已更新', 'success');
+            } catch (e) {
+                console.error('更新失败：', e);
+                showToast('❌ 操作失败', 'error');
+            }
+        }
+
+        async function deleteTask(id) {
+            if (!confirm('确定要删除这个任务吗？')) return;
+            try {
+                await fetch(SUPABASE_URL + '/rest/v1/tasks?id=eq.' + id, {
+                    method: 'DELETE',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                    }
+                });
+                await loadTasks();
+                renderTasks();
+                updateStats();
+                showToast('✅ 已删除', 'success');
+            } catch (e) {
+                console.error('删除失败：', e);
+                showToast('❌ 删除失败', 'error');
+            }
+        }
+
+        // ================================================================
+        //  渲染任务列表（管理端）
+        // ================================================================
+        function renderTasks() {
+            const container = document.getElementById('taskListAdmin');
+            if (!allTasks || allTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <div>暂无任务，发布一个吧！</div>
+                    </div>
+                `;
+                return;
+            }
+            let html = '';
+            for (let t of allTasks) {
+                const statusText = t.is_active ? '🟢 上架' : '🔴 下架';
+                const statusClass = t.is_active ? 'active' : '';
+                html += `
+                    <div class="task-item-admin">
+                        <div class="info">
+                            <div class="name">${t.name} <span style="font-weight:normal;color:#fdcb6e;">${t.price}金币</span></div>
+                            <div class="desc">${t.description || ''}</div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn-toggle ${statusClass}" onclick="toggleTask('${t.id}', ${t.is_active})">${statusText}</button>
+                            <button class="btn-del" onclick="deleteTask('${t.id}')">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        // ================================================================
+        //  完成订单
+        // ================================================================
+        async function completeOrder(orderId) {
+            if (!confirm('确认该任务已完成？')) return;
+            try {
+                await fetch(SUPABASE_URL + '/rest/v1/orders?id=eq.' + orderId, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: 'done',
+                        completed_at: new Date().toISOString()
+                    })
+                });
+                await loadOrders();
+                renderOrders();
+                updateStats();
+                showToast('✅ 订单已完成！', 'success');
+            } catch (e) {
+                console.error('完成订单失败：', e);
+                showToast('❌ 操作失败', 'error');
+            }
+        }
+
+        // ================================================================
+        //  渲染订单列表（管理端）
+        // ================================================================
+        function renderOrders() {
+            const container = document.getElementById('orderListAdmin');
+            const pendingOrders = allOrders.filter(o => o.status === 'pending');
+            if (pendingOrders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">✅</div>
+                        <div>没有待完成的订单</div>
+                    </div>
+                `;
+                return;
+            }
+            let html = '';
+            for (let o of pendingOrders) {
+                const userName = o.users ? o.users.name : '未知';
+                const taskName = o.tasks ? o.tasks.name : '未知任务';
+                const time = new Date(o.created_at).toLocaleString();
+                html += `
+                    <div class="order-item-admin">
+                        <div class="info">
+                            <div class="name">${taskName}</div>
+                            <div class="sub">👤 <span class="user-tag">${userName}</span> · ${time}</div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn-done" onclick="completeOrder('${o.id}')">✅ 完成</button>
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        // ================================================================
+        //  确认充值（核心功能）
+        // ================================================================
+        async function confirmRecharge() {
+            const userId = document.getElementById('rechargeUserSelect').value;
+            const amount = parseFloat(document.getElementById('rechargeAmountInput').value);
+
+            if (!userId) { showToast('⚠️ 请选择家长', 'error'); return; }
+            if (!amount || amount <= 0) { showToast('⚠️ 请输入有效金额', 'error'); return; }
+
+            const coins = Math.round(amount * 10);
+            const userName = allUsers.find(u => u.id === userId)?.name || '';
+            if (!confirm(`确认为 ${userName} 充值 ${amount} 元 = ${coins} 金币？`)) return;
+
+            try {
+                // 1. 查询当前余额
+                const userResp = await fetch(SUPABASE_URL + '/rest/v1/users?id=eq.' + userId + '&select=balance', {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                    }
+                });
+                const userData = await userResp.json();
+                const currentBalance = userData[0]?.balance || 0;
+                const newBalance = currentBalance + coins;
+
+                // 2. 更新余额
+                await fetch(SUPABASE_URL + '/rest/v1/users?id=eq.' + userId, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ balance: newBalance })
+                });
+
+                // 3. 记录充值
+                await fetch(SUPABASE_URL + '/rest/v1/transactions', {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        amount: amount,
+                        coins: coins,
+                        source: 'manual'
+                    })
+                });
+
+                showToast(`✅ ${userName} 充值成功！${amount}元 → ${coins}金币`, 'success');
+                document.getElementById('rechargeAmountInput').value = '';
+                await loadAllData();
+                populateUserSelect();
+
+            } catch (e) {
+                console.error('充值失败：', e);
+                showToast('❌ 充值失败，请重试', 'error');
+            }
+        }
+
+        // ================================================================
+        //  渲染充值记录
+        // ================================================================
+        function renderRechargeRecords() {
+            const container = document.getElementById('rechargeRecordList');
+            if (!allTransactions || allTransactions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <div>暂无充值记录</div>
+                    </div>
+                `;
+                return;
+            }
+            let html = '';
+            for (let t of allTransactions.slice(0, 30)) {
+                const userName = t.users ? t.users.name : '未知';
+                const time = new Date(t.created_at).toLocaleString();
+                html += `
+                    <div class="recharge-record">
+                        <div class="info">
+                            <div class="user">${userName}</div>
+                            <div class="detail">${t.amount}元 → <span class="coins">${t.coins}金币</span></div>
+                        </div>
+                        <div class="time">${time}</div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        // ================================================================
+        //  Toast提示
+        // ================================================================
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast show' + (type ? ' ' + type : '');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(function() {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 页面关闭清理
+        window.addEventListener('beforeunload', function() {
+            if (refreshTimer) clearInterval(refreshTimer);
+        });
+
+        console.log('✅ 孩子端加载完成');
+        console.log('📡 Supabase URL:', SUPABASE_URL);
+    </script>
 </body>
 </html>
