@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>🏠 家庭金币系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #f0f2f5;
+            padding: 16px;
+            padding-bottom: 80px;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 { font-size: 22px; }
+        .header p { opacity: 0.8; font-size: 14px; margin-top: 4px; }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
+        }
+        .user-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .user-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .user-item.selected {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+        .user-item .name { font-size: 16px; font-weight: 600; color: #333; }
+        .user-item .coins { font-size: 22px; font-weight: bold; color: #f57c00; }
+        .user-item .coins small { font-size: 12px; color: #999; }
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .task-btn {
+            background: #e3f2fd;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .task-btn:active { transform: scale(0.95); }
+        .task-btn .task-name { font-size: 14px; font-weight: 500; color: #1565c0; }
+        .task-btn .task-coins { font-size: 12px; color: #f57c00; }
+        .recharge-section {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .recharge-btn {
+            flex: 1;
+            min-width: 60px;
+            background: #43a047;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .recharge-btn:active { transform: scale(0.95); }
+        .recharge-btn.custom { background: #667eea; }
+        .recharge-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .log-list { max-height: 200px; overflow-y: auto; }
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        .log-item .positive { color: #43a047; }
+        .log-item .negative { color: #e53935; }
+        .log-item .log-time { color: #999; font-size: 12px; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+            z-index: 999;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.show { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        .loading { text-align: center; color: #999; padding: 20px; }
+        .empty { text-align: center; color: #ccc; padding: 10px; font-size: 14px; }
+        .member-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+        .member-chip {
+            padding: 4px 14px;
+            border-radius: 16px;
+            border: 2px solid #ddd;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .member-chip.active { border-color: #667eea; background: #f0f0ff; }
+        .qr-placeholder {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            border: 2px dashed #ddd;
+            margin-top: 10px;
+        }
+        .qr-placeholder .big { font-size: 48px; display: block; margin-bottom: 8px; }
+        .copy-btn {
+            background: #eee;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .copy-btn:active { background: #ddd; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 头部 -->
+    <div class="header">
+        <h1>🏠 家庭金币系统</h1>
+        <p>家长端 · 选择成员进行操作</p>
+    </div>
+
+    <!-- 选择成员 -->
+    <div class="card">
+        <div class="card-title">👤 当前操作成员</div>
+        <div class="member-selector" id="memberSelector">
+            <div class="loading">加载中...</div>
+        </div>
+    </div>
+
+    <!-- 成员余额 -->
+    <div class="card">
+        <div class="card-title">💰 所有成员余额</div>
+        <div class="user-grid" id="userGrid">
+            <div class="loading">加载中...</div>
+        </div>
+    </div>
+
+    <!-- 充值 -->
+    <div class="card">
+        <div class="card-title">💳 充值（生成收款码）</div>
+        <div class="recharge-section">
+            <button class="recharge-btn" onclick="recharge(10)">10元</button>
+            <button class="recharge-btn" onclick="recharge(20)">20元</button>
+            <button class="recharge-btn" onclick="recharge(50)">50元</button>
+            <button class="recharge-btn custom" onclick="customRecharge()">自定义</button>
+        </div>
+        <div id="qrDisplay" class="qr-placeholder" style="display:none;">
+            <span class="big">📱</span>
+            <div>请使用微信扫码支付</div>
+            <div style="font-size:20px;font-weight:bold;color:#333;" id="qrAmount"></div>
+            <div style="font-size:12px;color:#999;margin-top:4px;" id="qrNote"></div>
+            <div style="margin-top:8px;font-size:12px;color:#e53935;">⚠️ 支付后稍等几秒，金币自动到账</div>
+        </div>
+    </div>
+
+    <!-- 任务 -->
+    <div class="card">
+        <div class="card-title">🧹 完成任务赚金币</div>
+        <div class="task-grid" id="taskGrid">
+            <div class="loading">加载中...</div>
+        </div>
+    </div>
+
+    <!-- 最近记录 -->
+    <div class="card">
+        <div class="card-title">📋 最近操作记录</div>
+        <div class="log-list" id="logList">
+            <div class="loading">加载中...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast 提示 -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// ⚠️ 改成你自己的 Supabase 信息！
+// ============================================================
+const SUPABASE_URL = "https://epwcigpmkjocdpbljkjr.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwd2NpZ3Bta2pvY2RwYmxqa2pyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzI1MjMsImV4cCI6MjA5ODkwODUyM30.8-6OFgcPfm3HaUm3fNmlT1ceGsAtkbJ2e1Ih4KNuDN0";
+// ============================================================
+
+let currentUser = "我";  // 默认选中"我"
+
+// ---------- 工具函数 ----------
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+async function supabaseFetch(path, options = {}) {
+    const url = SUPABASE_URL + path;
+    const headers = {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+    };
+    const resp = await fetch(url, { ...options, headers });
+    if (!resp.ok) throw new Error(await resp.text());
+    return resp.json();
+}
+
+// ---------- 加载成员列表 ----------
+async function loadUsers() {
+    try {
+        const data = await supabaseFetch('/rest/v1/users?order=coins.desc');
+        const grid = document.getElementById('userGrid');
+        if (data.length === 0) {
+            grid.innerHTML = '<div class="empty">暂无成员</div>';
+            return;
+        }
+        grid.innerHTML = data.map(u => `
+            <div class="user-item ${u.name === currentUser ? 'selected' : ''}" onclick="selectMember('${u.name}')">
+                <div class="name">${u.name}</div>
+                <div class="coins">${u.coins} <small>金币</small></div>
+            </div>
+        `).join('');
+
+        // 更新成员选择器
+        const selector = document.getElementById('memberSelector');
+        selector.innerHTML = data.map(u => `
+            <span class="member-chip ${u.name === currentUser ? 'active' : ''}" onclick="selectMember('${u.name}')">${u.name}</span>
+        `).join('');
+    } catch (e) {
+        document.getElementById('userGrid').innerHTML = '<div class="empty">加载失败</div>';
+    }
+}
+
+// ---------- 选择成员 ----------
+function selectMember(name) {
+    currentUser = name;
+    loadUsers();
+    loadLogs();
+}
+
+// ---------- 加载任务 ----------
+async function loadTasks() {
+    try {
+        const data = await supabaseFetch('/rest/v1/tasks?is_active=eq.true&order=created_at.asc');
+        const grid = document.getElementById('taskGrid');
+        if (data.length === 0) {
+            grid.innerHTML = '<div class="empty">暂无任务，请联系管理员添加</div>';
+            return;
+        }
+        grid.innerHTML = data.map(t => `
+            <button class="task-btn" onclick="completeTask(${t.id}, '${t.name}', ${t.coins})">
+                <div class="task-name">${t.name}</div>
+                <div class="task-coins">+${t.coins} 金币</div>
+            </button>
+        `).join('');
+    } catch (e) {
+        document.getElementById('taskGrid').innerHTML = '<div class="empty">加载失败</div>';
+    }
+}
+
+// ---------- 完成任务 ----------
+async function completeTask(taskId, taskName, coins) {
+    if (!confirm(`${currentUser} 确认完成「${taskName}」？`)) return;
+    try {
+        // 1. 更新用户金币
+        await supabaseFetch('/rest/v1/users?name=eq.' + encodeURIComponent(currentUser), {
+            method: 'PATCH',
+            body: JSON.stringify({ coins: `coins + ${coins}` }),
+            headers: { 'Prefer': 'return=minimal' }
+        });
+        // 2. 记录交易
+        await supabaseFetch('/rest/v1/transactions', {
+            method: 'POST',
+            body: JSON.stringify({
+                user_name: currentUser,
+                amount: coins,
+                reason: `完成任务：${taskName}`
+            })
+        });
+        showToast(`✅ ${currentUser} 完成「${taskName}」+${coins}金币`);
+        loadUsers();
+        loadLogs();
+    } catch (e) {
+        showToast('❌ 操作失败：' + e.message);
+    }
+}
+
+// ---------- 充值 ----------
+async function recharge(amount) {
+    const qrDiv = document.getElementById('qrDisplay');
+    document.getElementById('qrAmount').textContent = `💰 ${amount}.00 元`;
+    document.getElementById('qrNote').textContent = `收款方：${currentUser}的家长`;
+    qrDiv.style.display = 'block';
+    showToast(`📱 请扫码支付 ${amount}元，支付后金币自动到账`);
+}
+
+function customRecharge() {
+    const val = prompt('请输入充值金额（元）：', '30');
+    if (val && !isNaN(val) && parseFloat(val) > 0) {
+        recharge(parseFloat(val));
+    } else {
+        showToast('请输入有效金额');
+    }
+}
+
+// ---------- 加载记录 ----------
+async function loadLogs() {
+    try {
+        const data = await supabaseFetch(
+            `/rest/v1/transactions?user_name=eq.${encodeURIComponent(currentUser)}&order=created_at.desc&limit=20`
+        );
+        const list = document.getElementById('logList');
+        if (data.length === 0) {
+            list.innerHTML = '<div class="empty">暂无记录</div>';
+            return;
+        }
+        list.innerHTML = data.map(t => `
+            <div class="log-item">
+                <span>${t.reason}</span>
+                <span>
+                    <span class="${t.amount > 0 ? 'positive' : 'negative'}">${t.amount > 0 ? '+' : ''}${t.amount}</span>
+                    <span class="log-time">${t.created_at ? t.created_at.replace('T', ' ').slice(0, 16) : ''}</span>
+                </span>
+            </div>
+        `).join('');
+    } catch (e) {
+        document.getElementById('logList').innerHTML = '<div class="empty">加载失败</div>';
+    }
+}
+
+// ---------- 自动刷新 ----------
+function refreshAll() {
+    loadUsers();
+    loadTasks();
+    loadLogs();
+}
+
+// ---------- 初始化 ----------
+refreshAll();
+// 每30秒自动刷新
+setInterval(refreshAll, 30000);
+</script>
+</body>
+</html>
