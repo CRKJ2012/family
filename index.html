@@ -45,17 +45,19 @@
             gap: 8px;
             font-size: 13px;
             color: #636e72;
-            padding: 6px 0;
+            padding: 6px 12px;
             margin-bottom: 6px;
             background: #fff;
             border-radius: 20px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            flex-wrap: wrap;
         }
         .connection-status .dot {
             width: 10px;
             height: 10px;
             border-radius: 50%;
             display: inline-block;
+            flex-shrink: 0;
         }
         .connection-status .dot.online {
             background: #00b894;
@@ -224,6 +226,7 @@
         .task-item-admin .actions {
             display: flex;
             gap: 6px;
+            flex-wrap: wrap;
         }
         .task-item-admin .actions button {
             padding: 4px 12px;
@@ -365,6 +368,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 4px;
         }
         .recharge-record .info .user {
             font-weight: 600;
@@ -612,10 +617,10 @@
         let isOnline = false;
 
         // ================================================================
-        //  页面加载
+        //  页面加载（网页版用 DOMContentLoaded）
         // ================================================================
-        document.addEventListener('plusready', function() {
-            console.log('✅ 孩子端启动');
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ 孩子端网页启动');
             updateConnectionStatus('checking', '正在连接云端...');
             checkConnection();
             loadAllData();
@@ -624,6 +629,28 @@
                 loadAllData();
             }, 15000);
         });
+
+        // ================================================================
+        //  通用 fetch 封装（解决跨域）
+        // ================================================================
+        async function supabaseFetch(path, options = {}) {
+            const url = SUPABASE_URL + path;
+            const headers = {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+            const response = await fetch(url, {
+                ...options,
+                headers: headers
+            });
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`HTTP ${response.status}: ${text}`);
+            }
+            return response.json();
+        }
 
         // ================================================================
         //  检查云端连接状态
@@ -666,17 +693,21 @@
         //  加载所有数据
         // ================================================================
         async function loadAllData() {
-            await Promise.all([
-                loadUsers(),
-                loadTasks(),
-                loadOrders(),
-                loadTransactions()
-            ]);
-            updateStats();
-            renderTasks();
-            renderOrders();
-            renderRechargeRecords();
-            populateUserSelect();
+            try {
+                await Promise.all([
+                    loadUsers(),
+                    loadTasks(),
+                    loadOrders(),
+                    loadTransactions()
+                ]);
+                updateStats();
+                renderTasks();
+                renderOrders();
+                renderRechargeRecords();
+                populateUserSelect();
+            } catch (e) {
+                console.error('加载数据失败：', e);
+            }
         }
 
         // ================================================================
@@ -684,15 +715,10 @@
         // ================================================================
         async function loadUsers() {
             try {
-                const resp = await fetch(SUPABASE_URL + '/rest/v1/users?select=*&order=name.asc', {
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-                    }
-                });
-                allUsers = await resp.json();
+                allUsers = await supabaseFetch('/rest/v1/users?select=*&order=name.asc');
             } catch (e) {
                 console.error('加载用户失败：', e);
+                allUsers = [];
             }
         }
 
@@ -701,15 +727,10 @@
         // ================================================================
         async function loadTasks() {
             try {
-                const resp = await fetch(SUPABASE_URL + '/rest/v1/tasks?select=*&order=created_at.desc', {
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-                    }
-                });
-                allTasks = await resp.json();
+                allTasks = await supabaseFetch('/rest/v1/tasks?select=*&order=created_at.desc');
             } catch (e) {
                 console.error('加载任务失败：', e);
+                allTasks = [];
             }
         }
 
@@ -718,16 +739,10 @@
         // ================================================================
         async function loadOrders() {
             try {
-                const resp = await fetch(SUPABASE_URL +
-                    '/rest/v1/orders?select=*,users(name),tasks(name)&order=created_at.desc', {
-                        headers: {
-                            'apikey': SUPABASE_ANON_KEY,
-                            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-                        }
-                    });
-                allOrders = await resp.json();
+                allOrders = await supabaseFetch('/rest/v1/orders?select=*,users(name),tasks(name)&order=created_at.desc');
             } catch (e) {
                 console.error('加载订单失败：', e);
+                allOrders = [];
             }
         }
 
@@ -736,16 +751,10 @@
         // ================================================================
         async function loadTransactions() {
             try {
-                const resp = await fetch(SUPABASE_URL +
-                    '/rest/v1/transactions?select=*,users(name)&order=created_at.desc&limit=50', {
-                        headers: {
-                            'apikey': SUPABASE_ANON_KEY,
-                            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-                        }
-                    });
-                allTransactions = await resp.json();
+                allTransactions = await supabaseFetch('/rest/v1/transactions?select=*,users(name)&order=created_at.desc&limit=50');
             } catch (e) {
                 console.error('加载充值记录失败：', e);
+                allTransactions = [];
             }
         }
 
@@ -807,12 +816,9 @@
             if (!price || price <= 0) { showToast('⚠️ 请输入有效价格', 'error'); return; }
 
             try {
-                const resp = await fetch(SUPABASE_URL + '/rest/v1/tasks', {
+                const data = await supabaseFetch('/rest/v1/tasks', {
                     method: 'POST',
                     headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                        'Content-Type': 'application/json',
                         'Prefer': 'return=representation'
                     },
                     body: JSON.stringify({
@@ -822,7 +828,6 @@
                         is_active: true
                     })
                 });
-                const data = await resp.json();
                 if (data && data.length > 0) {
                     showToast('✅ 任务发布成功！', 'success');
                     document.getElementById('taskNameInput').value = '';
@@ -834,7 +839,7 @@
                 }
             } catch (e) {
                 console.error('添加任务失败：', e);
-                showToast('❌ 发布失败，请重试', 'error');
+                showToast('❌ 发布失败：' + e.message, 'error');
             }
         }
 
@@ -843,13 +848,8 @@
         // ================================================================
         async function toggleTask(id, currentStatus) {
             try {
-                await fetch(SUPABASE_URL + '/rest/v1/tasks?id=eq.' + id, {
+                await supabaseFetch('/rest/v1/tasks?id=eq.' + id, {
                     method: 'PATCH',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({ is_active: !currentStatus })
                 });
                 await loadTasks();
@@ -865,12 +865,8 @@
         async function deleteTask(id) {
             if (!confirm('确定要删除这个任务吗？')) return;
             try {
-                await fetch(SUPABASE_URL + '/rest/v1/tasks?id=eq.' + id, {
-                    method: 'DELETE',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-                    }
+                await supabaseFetch('/rest/v1/tasks?id=eq.' + id, {
+                    method: 'DELETE'
                 });
                 await loadTasks();
                 renderTasks();
@@ -922,13 +918,8 @@
         async function completeOrder(orderId) {
             if (!confirm('确认该任务已完成？')) return;
             try {
-                await fetch(SUPABASE_URL + '/rest/v1/orders?id=eq.' + orderId, {
+                await supabaseFetch('/rest/v1/orders?id=eq.' + orderId, {
                     method: 'PATCH',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({
                         status: 'done',
                         completed_at: new Date().toISOString()
@@ -995,35 +986,19 @@
 
             try {
                 // 1. 查询当前余额
-                const userResp = await fetch(SUPABASE_URL + '/rest/v1/users?id=eq.' + userId + '&select=balance', {
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-                    }
-                });
-                const userData = await userResp.json();
+                const userData = await supabaseFetch('/rest/v1/users?id=eq.' + userId + '&select=balance');
                 const currentBalance = userData[0]?.balance || 0;
                 const newBalance = currentBalance + coins;
 
                 // 2. 更新余额
-                await fetch(SUPABASE_URL + '/rest/v1/users?id=eq.' + userId, {
+                await supabaseFetch('/rest/v1/users?id=eq.' + userId, {
                     method: 'PATCH',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({ balance: newBalance })
                 });
 
                 // 3. 记录充值
-                await fetch(SUPABASE_URL + '/rest/v1/transactions', {
+                await supabaseFetch('/rest/v1/transactions', {
                     method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({
                         user_id: userId,
                         amount: amount,
@@ -1039,7 +1014,7 @@
 
             } catch (e) {
                 console.error('充值失败：', e);
-                showToast('❌ 充值失败，请重试', 'error');
+                showToast('❌ 充值失败：' + e.message, 'error');
             }
         }
 
@@ -1092,7 +1067,7 @@
             if (refreshTimer) clearInterval(refreshTimer);
         });
 
-        console.log('✅ 孩子端加载完成');
+        console.log('✅ 孩子端网页加载完成');
         console.log('📡 Supabase URL:', SUPABASE_URL);
     </script>
 </body>
