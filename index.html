@@ -20,6 +20,7 @@
       padding: 0;
       margin: 0;
       padding-bottom: 80px;
+      overflow-x: hidden;
     }
     .app-container {
       max-width: 480px;
@@ -30,7 +31,7 @@
     }
     header {
       background: white;
-      padding: 14px 16px;
+      padding: 12px 16px;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -62,16 +63,10 @@
       color: white;
       border-color: #2563eb;
     }
-    .btn-primary:hover {
-      background: #1d4ed8;
-    }
     .btn-success {
       background: #22c55e;
       color: white;
       border-color: #22c55e;
-    }
-    .btn-success:hover {
-      background: #16a34a;
     }
     .btn-danger {
       background: #ef4444;
@@ -86,92 +81,116 @@
       font-size: 12px;
     }
 
-    /* 分类导航 */
-    .category-nav {
-      background: white;
-      padding: 10px 16px;
-      overflow-x: auto;
-      white-space: nowrap;
+    /* 美团式布局：左侧分类 + 右侧菜品 */
+    .main-content {
       display: flex;
-      gap: 8px;
-      border-bottom: 1px solid #f1f5f9;
-      position: sticky;
-      top: 60px;
-      z-index: 99;
-    }
-    .category-nav::-webkit-scrollbar {
-      display: none;
-    }
-    .category-item {
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 14px;
-      cursor: pointer;
-      background: #f1f5f9;
-      color: #64748b;
-      transition: 0.2s;
-      flex-shrink: 0;
-    }
-    .category-item.active {
-      background: #2563eb;
-      color: white;
+      height: calc(100vh - 120px);
+      overflow: hidden;
     }
 
-    /* 菜品列表 */
-    .menu-section {
-      padding: 12px 16px;
+    /* 左侧分类 */
+    .category-sidebar {
+      width: 80px;
+      flex-shrink: 0;
+      background: #f8fafc;
+      overflow-y: auto;
+      padding: 8px 0;
+      border-right: 1px solid #f1f5f9;
+      height: 100%;
+    }
+    .category-sidebar::-webkit-scrollbar {
+      width: 0;
+    }
+    .category-item-side {
+      padding: 12px 8px;
+      text-align: center;
+      font-size: 13px;
+      color: #64748b;
+      cursor: pointer;
+      transition: 0.15s;
+      border-left: 3px solid transparent;
+      word-break: break-all;
+      line-height: 1.3;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .category-item-side.active {
+      background: white;
+      color: #2563eb;
+      border-left-color: #2563eb;
+      font-weight: 600;
+    }
+    .category-item-side:active {
+      background: #eef2ff;
+    }
+
+    /* 右侧菜品列表 */
+    .menu-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 12px 80px 12px;
+      height: 100%;
+    }
+    .menu-list::-webkit-scrollbar {
+      width: 0;
     }
     .menu-section-title {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin: 8px 0 12px;
       padding-left: 4px;
+      color: #1e293b;
     }
-    .menu-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    .menu-item-row {
+      display: flex;
+      background: white;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+      align-items: center;
       gap: 12px;
     }
-    .menu-item {
-      background: white;
-      border-radius: 16px;
-      padding: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      transition: 0.2s;
-    }
-    .menu-item img {
-      width: 100%;
-      height: 130px;
+    .menu-item-row img {
+      width: 70px;
+      height: 70px;
       object-fit: cover;
-      border-radius: 12px;
+      border-radius: 10px;
       background: #e9edf2;
+      flex-shrink: 0;
     }
-    .menu-item h4 {
+    .menu-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .menu-item-info h4 {
       font-size: 15px;
-      margin: 6px 0 2px;
+      font-weight: 600;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .menu-item .price {
-      font-weight: 700;
-      color: #f43f5e;
-      font-size: 16px;
-    }
-    .menu-item .desc {
+    .menu-item-info .desc {
       font-size: 12px;
       color: #94a3b8;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-
-    /* 购物车按钮 - 美团风格 */
-    .cart-control {
+    .menu-item-info .price {
+      font-weight: 700;
+      color: #f43f5e;
+      font-size: 16px;
+      margin-top: 2px;
+    }
+    .menu-item-info .cart-control {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-top: 8px;
+      justify-content: flex-end;
+      margin-top: 4px;
+      gap: 6px;
     }
     .qty-control {
       display: flex;
@@ -182,8 +201,8 @@
       padding: 2px 4px;
     }
     .qty-control button {
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       border: none;
       background: white;
@@ -206,10 +225,11 @@
       color: white;
       border: none;
       border-radius: 20px;
-      padding: 4px 12px;
+      padding: 4px 14px;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
+      white-space: nowrap;
     }
     .add-btn:active {
       transform: scale(0.95);
@@ -224,7 +244,7 @@
       width: 100%;
       max-width: 480px;
       background: white;
-      padding: 12px 16px;
+      padding: 10px 16px;
       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
       display: flex;
       justify-content: space-between;
@@ -267,8 +287,16 @@
       background: #94a3b8;
       cursor: not-allowed;
     }
+    .cart-bar .clear-cart {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 0 4px;
+    }
 
-    /* 结算页弹窗 */
+    /* 结算弹窗 */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -364,17 +392,6 @@
       transform: scale(0.98);
     }
 
-    /* 空状态 */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #94a3b8;
-    }
-    .empty-state .icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-    }
-
     /* 收款码弹窗 */
     .qrcode-modal {
       position: fixed;
@@ -412,6 +429,36 @@
       cursor: pointer;
     }
 
+    .badge {
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .badge-accepted {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .badge-cooking {
+      background: #fce4ec;
+      color: #b91c1c;
+    }
+    .badge-ready {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .badge-completed {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .badge-rejected {
+      background: #fee2e2;
+      color: #991b1b;
+    }
     .text-muted {
       color: #94a3b8;
       font-size: 13px;
@@ -430,6 +477,15 @@
       gap: 8px;
       align-items: center;
     }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+    }
+    .empty-state .icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
   </style>
 </head>
 <body>
@@ -438,45 +494,48 @@
       <!-- 头部 -->
       <header>
         <div class="logo">🍽️ <span>运光点单</span></div>
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:6px;">
           <button class="btn btn-outline btn-sm" @click="fetchMenu">🔄</button>
           <button class="btn btn-outline btn-sm" @click="showOrders = !showOrders">📋</button>
         </div>
       </header>
 
-      <!-- 分类导航 -->
-      <div class="category-nav" v-if="categories.length > 0">
-        <div class="category-item" :class="{active: currentCategory === ''}" @click="currentCategory = ''">全部</div>
-        <div class="category-item" v-for="cat in categories" :key="cat.id" :class="{active: currentCategory === cat.id}" @click="currentCategory = cat.id">
-          {{ cat.name }}
+      <!-- 主体：左侧分类 + 右侧菜品 -->
+      <div class="main-content">
+        <!-- 左侧分类 -->
+        <div class="category-sidebar">
+          <div class="category-item-side" :class="{active: currentCategory === ''}" @click="currentCategory = ''">
+            全部
+          </div>
+          <div class="category-item-side" v-for="cat in categories" :key="cat.id" :class="{active: currentCategory === cat.id}" @click="currentCategory = cat.id">
+            {{ cat.name }}
+          </div>
         </div>
-      </div>
 
-      <!-- 菜品列表 -->
-      <div class="menu-section" v-if="filteredMenu.length > 0">
-        <div class="menu-grid">
-          <div class="menu-item" v-for="item in filteredMenu" :key="item.id">
+        <!-- 右侧菜品列表 -->
+        <div class="menu-list" ref="menuList">
+          <div v-if="filteredMenu.length === 0" class="empty-state">
+            <div class="icon">🍽️</div>
+            <div>暂无菜品</div>
+            <div class="text-muted">商家正在准备菜单...</div>
+          </div>
+          <div v-for="item in filteredMenu" :key="item.id" class="menu-item-row">
             <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" />
-            <h4>{{ item.name }}</h4>
-            <div class="price">¥{{ Number(item.price).toFixed(2) }}</div>
-            <div class="desc">{{ item.description || '' }}</div>
-            <div class="cart-control">
-              <div class="qty-control" v-if="getCartQty(item.id) > 0">
-                <button @click="changeQty(item, -1)">−</button>
-                <span class="qty-num">{{ getCartQty(item.id) }}</span>
-                <button @click="changeQty(item, 1)">+</button>
+            <div class="menu-item-info">
+              <h4>{{ item.name }}</h4>
+              <div class="desc">{{ item.description || '' }}</div>
+              <div class="price">¥{{ Number(item.price).toFixed(2) }}</div>
+              <div class="cart-control">
+                <div class="qty-control" v-if="getCartQty(item.id) > 0">
+                  <button @click="changeQty(item, -1)">−</button>
+                  <span class="qty-num">{{ getCartQty(item.id) }}</span>
+                  <button @click="changeQty(item, 1)">+</button>
+                </div>
+                <button class="add-btn" v-else @click="addToCart(item)">加入购物车</button>
               </div>
-              <button class="add-btn" v-else @click="addToCart(item)">加入购物车</button>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- 空状态 -->
-      <div v-else class="empty-state">
-        <div class="icon">🍽️</div>
-        <div>暂无菜品</div>
-        <div class="text-muted">商家正在准备菜单...</div>
       </div>
 
       <!-- 底部购物车 -->
@@ -485,8 +544,9 @@
           <div class="cart-count">{{ totalQty }}</div>
           <div>
             <div class="cart-total">¥{{ totalPrice.toFixed(2) }}</div>
-            <div class="text-muted" style="font-size:12px;">已选 {{ totalQty }} 件</div>
+            <div class="text-muted" style="font-size:11px;">已选 {{ totalQty }} 件</div>
           </div>
+          <button class="clear-cart" @click="clearCart">🗑️</button>
         </div>
         <button class="checkout-btn" @click="openCheckout">去结算</button>
       </div>
@@ -533,22 +593,20 @@
           <h3>📋 我的订单</h3>
           <div v-if="myOrders.length === 0" class="text-muted text-center" style="padding:30px;">暂无订单</div>
           <div v-for="order in myOrders" :key="order.id" style="border-bottom:1px solid #f1f5f9; padding:12px 0;">
-            <div style="display:flex; justify-content:space-between; font-size:13px; color:#64748b;">
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:#64748b;">
               <span>#{{ order.order_no }}</span>
               <span>{{ formatTime(order.created_at) }}</span>
             </div>
-            <div style="font-size:14px; margin:4px 0;">
+            <div style="font-size:13px; margin:4px 0;">
               <span v-for="(item, idx) in order.items" :key="idx">
                 {{ item.name }}×{{ item.qty }}{{ idx < order.items.length-1 ? '、' : '' }}
               </span>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-weight:700;">¥{{ order.total_amount.toFixed(2) }}</span>
-              <span class="badge" :class="{
-                'badge-success': order.status === 'completed',
-                'badge-warning': order.status === 'pending',
-                'badge-danger': order.status === 'cancelled'
-              }">{{ getStatusText(order.status) }}</span>
+              <span style="font-weight:700; color:#f43f5e;">¥{{ order.total_amount.toFixed(2) }}</span>
+              <span class="badge" :class="getBadgeClass(order.status)">
+                {{ getStatusText(order.status) }}
+              </span>
             </div>
           </div>
         </div>
@@ -577,8 +635,7 @@
           showOrders: false,
           orderRemark: '',
           myOrders: [],
-          qrcodeUrl: '',
-          orderNo: 1
+          qrcodeUrl: ''
         };
       },
       computed: {
@@ -606,8 +663,26 @@
           return d.toLocaleString('zh-CN');
         },
         getStatusText(status) {
-          const map = { pending: '待处理', completed: '已完成', cancelled: '已取消' };
+          const map = {
+            pending: '待接单',
+            accepted: '已接单',
+            cooking: '制作中',
+            ready: '请取餐',
+            completed: '已完成',
+            rejected: '已拒绝'
+          };
           return map[status] || status;
+        },
+        getBadgeClass(status) {
+          const map = {
+            pending: 'badge-pending',
+            accepted: 'badge-accepted',
+            cooking: 'badge-cooking',
+            ready: 'badge-ready',
+            completed: 'badge-completed',
+            rejected: 'badge-rejected'
+          };
+          return map[status] || '';
         },
 
         async fetchMenu() {
@@ -655,7 +730,6 @@
         },
 
         async fetchMyOrders() {
-          // 简单存储：用 localStorage 存储订单号列表
           try {
             const orderIds = JSON.parse(localStorage.getItem('myOrders') || '[]');
             if (orderIds.length === 0) return;
@@ -696,6 +770,13 @@
           }
         },
 
+        clearCart() {
+          if (this.cart.length === 0) return;
+          if (confirm('确认清空购物车？')) {
+            this.cart = [];
+          }
+        },
+
         openCheckout() {
           if (this.cart.length === 0) return;
           this.showCheckout = true;
@@ -728,7 +809,6 @@
 
             if (error) throw error;
 
-            // 保存订单ID到本地
             const orderIds = JSON.parse(localStorage.getItem('myOrders') || '[]');
             orderIds.push(data[0].id);
             localStorage.setItem('myOrders', JSON.stringify(orderIds));

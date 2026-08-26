@@ -111,14 +111,8 @@
       grid-template-columns: 1fr 1fr;
       gap: 20px;
     }
-    .grid-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 20px;
-    }
     @media (max-width: 700px) {
-      .grid-2,
-      .grid-3 {
+      .grid-2 {
         grid-template-columns: 1fr;
       }
     }
@@ -169,28 +163,34 @@
       color: #0f172a;
       font-size: 16px;
     }
-    .menu-item .actions {
-      margin-top: 8px;
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
     .badge {
-      background: #eef2ff;
-      color: #2563eb;
       padding: 4px 12px;
       border-radius: 40px;
-      font-size: 13px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
     }
-    .badge-success {
-      background: #dcfce7;
-      color: #166534;
-    }
-    .badge-warning {
+    .badge-pending {
       background: #fef3c7;
       color: #92400e;
     }
-    .badge-danger {
+    .badge-accepted {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .badge-cooking {
+      background: #fce4ec;
+      color: #b91c1c;
+    }
+    .badge-ready {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .badge-completed {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .badge-rejected {
       background: #fee2e2;
       color: #991b1b;
     }
@@ -295,6 +295,7 @@
     .order-card .order-total {
       font-weight: 700;
       font-size: 18px;
+      color: #f43f5e;
     }
     .category-tag {
       background: #eef2ff;
@@ -303,6 +304,31 @@
       border-radius: 20px;
       font-size: 12px;
       display: inline-block;
+    }
+    .order-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .status-filter {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .status-filter .filter-btn {
+      padding: 4px 16px;
+      border-radius: 20px;
+      border: 1px solid #d1d5db;
+      background: white;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .status-filter .filter-btn.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
     }
     .mt-2 {
       margin-top: 8px;
@@ -319,7 +345,7 @@
         <div class="logo">🛒 <span>运光点单</span> · 商家端</div>
         <div>
           <button class="btn btn-outline" @click="fetchAllData">🔄 刷新</button>
-          <span class="badge">商家ID: {{ merchantId }}</span>
+          <span class="badge" style="background:#eef2ff;color:#2563eb;">商家ID: {{ merchantId }}</span>
         </div>
       </header>
 
@@ -331,7 +357,7 @@
       <!-- Tab切换 -->
       <div class="tabs">
         <div class="tab" :class="{active: currentTab === 'orders'}" @click="currentTab = 'orders'">
-          📋 订单管理 ({{ orders.length }})
+          📋 订单管理 ({{ filteredOrders.length }})
         </div>
         <div class="tab" :class="{active: currentTab === 'menu'}" @click="currentTab = 'menu'">
           📦 菜品管理 ({{ menuItems.length }})
@@ -347,35 +373,47 @@
       <!-- ====== 订单管理 ====== -->
       <div v-if="currentTab === 'orders'">
         <div class="card">
-          <h3>📋 订单列表</h3>
-          <div v-if="orders.length === 0" class="text-muted" style="padding:30px; text-align:center;">暂无订单</div>
-          <div v-for="order in orders" :key="order.id" class="order-card">
+          <h3 style="margin-bottom:12px;">📋 订单列表</h3>
+          <div class="status-filter">
+            <button class="filter-btn" :class="{active: statusFilter === ''}" @click="statusFilter = ''">全部</button>
+            <button class="filter-btn" :class="{active: statusFilter === 'pending'}" @click="statusFilter = 'pending'">⏳ 待接单</button>
+            <button class="filter-btn" :class="{active: statusFilter === 'accepted'}" @click="statusFilter = 'accepted'">✅ 已接单</button>
+            <button class="filter-btn" :class="{active: statusFilter === 'cooking'}" @click="statusFilter = 'cooking'">👨‍🍳 制作中</button>
+            <button class="filter-btn" :class="{active: statusFilter === 'ready'}" @click="statusFilter = 'ready'">📦 请取餐</button>
+            <button class="filter-btn" :class="{active: statusFilter === 'completed'}" @click="statusFilter = 'completed'">✅ 已完成</button>
+            <button class="filter-btn" :class="{active: statusFilter === 'rejected'}" @click="statusFilter = 'rejected'">❌ 已拒绝</button>
+          </div>
+          <div v-if="filteredOrders.length === 0" class="text-muted" style="padding:30px; text-align:center;">暂无订单</div>
+          <div v-for="order in filteredOrders" :key="order.id" class="order-card">
             <div class="order-header">
               <div>
                 <strong>#{{ order.order_no }}</strong>
-                <span class="badge" :class="{
-                  'badge-success': order.status === 'completed',
-                  'badge-warning': order.status === 'pending',
-                  'badge-danger': order.status === 'cancelled'
-                }">{{ getStatusText(order.status) }}</span>
+                <span class="badge" :class="getBadgeClass(order.status)">
+                  {{ getStatusText(order.status) }}
+                </span>
               </div>
               <div style="font-size:13px; color:#64748b;">
                 {{ formatTime(order.created_at) }}
               </div>
             </div>
             <div class="order-items">
-              <div v-for="item in order.items" :key="item.id">
-                {{ item.name }} × {{ item.qty }} = ¥{{ (item.price * item.qty).toFixed(2) }}
+              <div v-for="item in order.items" :key="item.id" style="display:flex; justify-content:space-between; padding:2px 0;">
+                <span>{{ item.name }} × {{ item.qty }}</span>
+                <span>¥{{ (item.price * item.qty).toFixed(2) }}</span>
               </div>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-top:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-top:8px; border-top:1px solid #f1f5f9; padding-top:8px;">
               <div>
                 <span class="order-total">¥{{ order.total_amount.toFixed(2) }}</span>
                 <span v-if="order.remark" style="font-size:13px; color:#64748b; margin-left:12px;">📝 {{ order.remark }}</span>
               </div>
-              <div style="display:flex; gap:8px;">
-                <button class="btn btn-success btn-sm" @click="updateOrderStatus(order.id, 'completed')">✅ 完成</button>
-                <button class="btn btn-danger btn-sm" @click="updateOrderStatus(order.id, 'cancelled')">❌ 取消</button>
+              <div class="order-actions">
+                <button v-if="order.status === 'pending'" class="btn btn-success btn-sm" @click="updateOrderStatus(order.id, 'accepted')">✅ 接单</button>
+                <button v-if="order.status === 'accepted'" class="btn btn-warning btn-sm" @click="updateOrderStatus(order.id, 'cooking')">👨‍🍳 制作</button>
+                <button v-if="order.status === 'cooking'" class="btn btn-primary btn-sm" @click="updateOrderStatus(order.id, 'ready')">📦 备好</button>
+                <button v-if="order.status === 'ready'" class="btn btn-success btn-sm" @click="updateOrderStatus(order.id, 'completed')">✅ 完成</button>
+                <button v-if="order.status === 'pending'" class="btn btn-danger btn-sm" @click="updateOrderStatus(order.id, 'rejected')">❌ 拒绝</button>
+                <button class="btn btn-danger btn-sm" @click="deleteOrder(order.id)">🗑️ 删除</button>
               </div>
             </div>
           </div>
@@ -399,7 +437,7 @@
           </div>
         </div>
 
-        <!-- 菜品分类管理 -->
+        <!-- 菜品分类设置 -->
         <div class="card">
           <h3 style="margin-bottom:14px;">📦 菜品分类设置</h3>
           <div class="menu-grid">
@@ -459,7 +497,7 @@
               <div style="font-size:12px; color:#64748b;">
                 <span class="category-tag">{{ getCategoryName(item.category_id) || '未分类' }}</span>
               </div>
-              <div class="actions">
+              <div class="actions" style="margin-top:8px; display:flex; gap:6px;">
                 <button class="btn btn-danger btn-sm" @click="deleteItem(item.id)">🗑️</button>
                 <button class="btn btn-outline btn-sm" @click="startEdit(item)">✏️</button>
               </div>
@@ -533,6 +571,7 @@
         return {
           merchantId: 'merchant_001',
           currentTab: 'orders',
+          statusFilter: '',
           menuItems: [],
           categories: [],
           orders: [],
@@ -545,11 +584,16 @@
           messageType: 'success-msg'
         };
       },
+      computed: {
+        filteredOrders() {
+          if (!this.statusFilter) return this.orders;
+          return this.orders.filter(o => o.status === this.statusFilter);
+        }
+      },
       mounted() {
         this.fetchAllData();
         this.fetchQRCode();
-        // 每30秒刷新订单
-        setInterval(() => { this.fetchOrders(); }, 30000);
+        setInterval(() => { this.fetchOrders(); }, 15000);
       },
       methods: {
         showMessage(text, type = 'success-msg') {
@@ -565,8 +609,27 @@
         },
 
         getStatusText(status) {
-          const map = { pending: '待处理', completed: '已完成', cancelled: '已取消' };
+          const map = {
+            pending: '待接单',
+            accepted: '已接单',
+            cooking: '制作中',
+            ready: '请取餐',
+            completed: '已完成',
+            rejected: '已拒绝'
+          };
           return map[status] || status;
+        },
+
+        getBadgeClass(status) {
+          const map = {
+            pending: 'badge-pending',
+            accepted: 'badge-accepted',
+            cooking: 'badge-cooking',
+            ready: 'badge-ready',
+            completed: 'badge-completed',
+            rejected: 'badge-rejected'
+          };
+          return map[status] || '';
         },
 
         getCategoryName(id) {
@@ -626,7 +689,6 @@
         async deleteCategory(id) {
           if (!confirm('确认删除此分类？')) return;
           try {
-            // 先将该分类下的菜品移出
             await supabaseClient
               .from('menu')
               .update({ category_id: null })
@@ -815,6 +877,22 @@
             this.showMessage('✅ 订单状态已更新', 'success-msg');
           } catch (err) {
             this.showMessage('❌ 更新失败: ' + err.message, 'error-msg');
+          }
+        },
+
+        async deleteOrder(id) {
+          if (!confirm('确认删除此订单？')) return;
+          try {
+            const { error } = await supabaseClient
+              .from('orders')
+              .delete()
+              .eq('id', id);
+
+            if (error) throw error;
+            this.orders = this.orders.filter(o => o.id !== id);
+            this.showMessage('✅ 订单已删除', 'success-msg');
+          } catch (err) {
+            this.showMessage('❌ 删除失败: ' + err.message, 'error-msg');
           }
         },
 
