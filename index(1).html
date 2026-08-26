@@ -20,7 +20,7 @@
       padding: 20px;
     }
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
     }
     header {
@@ -38,7 +38,6 @@
     .logo {
       font-size: 24px;
       font-weight: 700;
-      color: #1e293b;
     }
     .logo span {
       background: linear-gradient(135deg, #2563eb, #7c3aed);
@@ -66,14 +65,6 @@
     .btn-primary:hover {
       background: #1d4ed8;
     }
-    .btn-danger {
-      background: #ef4444;
-      color: white;
-      border-color: #ef4444;
-    }
-    .btn-danger:hover {
-      background: #dc2626;
-    }
     .btn-success {
       background: #22c55e;
       color: white;
@@ -82,11 +73,31 @@
     .btn-success:hover {
       background: #16a34a;
     }
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+      border-color: #ef4444;
+    }
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    .btn-warning {
+      background: #f59e0b;
+      color: white;
+      border-color: #f59e0b;
+    }
+    .btn-warning:hover {
+      background: #d97706;
+    }
     .btn-outline {
       background: transparent;
     }
     .btn-outline:hover {
       background: #f1f5f9;
+    }
+    .btn-sm {
+      padding: 4px 12px;
+      font-size: 12px;
     }
     .card {
       background: white;
@@ -100,8 +111,14 @@
       grid-template-columns: 1fr 1fr;
       gap: 20px;
     }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+    }
     @media (max-width: 700px) {
-      .grid-2 {
+      .grid-2,
+      .grid-3 {
         grid-template-columns: 1fr;
       }
     }
@@ -116,7 +133,8 @@
       color: #334155;
     }
     .form-group input,
-    .form-group textarea {
+    .form-group textarea,
+    .form-group select {
       width: 100%;
       padding: 10px 14px;
       border: 1px solid #d1d9e6;
@@ -163,6 +181,18 @@
       padding: 4px 12px;
       border-radius: 40px;
       font-size: 13px;
+    }
+    .badge-success {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .badge-warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .badge-danger {
+      background: #fee2e2;
+      color: #991b1b;
     }
     .footer {
       margin-top: 40px;
@@ -226,6 +256,54 @@
       align-items: center;
       flex-wrap: wrap;
     }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 8px 20px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      font-weight: 500;
+    }
+    .tab.active {
+      border-bottom-color: #2563eb;
+      color: #2563eb;
+    }
+    .order-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      background: #fafcff;
+    }
+    .order-card .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .order-card .order-items {
+      font-size: 14px;
+      color: #475569;
+    }
+    .order-card .order-total {
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .category-tag {
+      background: #eef2ff;
+      color: #2563eb;
+      padding: 2px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      display: inline-block;
+    }
     .mt-2 {
       margin-top: 8px;
     }
@@ -240,8 +318,8 @@
       <header>
         <div class="logo">🛒 <span>运光点单</span> · 商家端</div>
         <div>
-          <button class="btn btn-outline" @click="fetchMenu">🔄 刷新</button>
-          <button class="btn btn-outline" @click="addSample">➕ 测试数据</button>
+          <button class="btn btn-outline" @click="fetchAllData">🔄 刷新</button>
+          <span class="badge">商家ID: {{ merchantId }}</span>
         </div>
       </header>
 
@@ -250,96 +328,188 @@
         {{ message }}
       </div>
 
-      <!-- ====== 收款码管理 ====== -->
-      <div class="card">
-        <h3 style="margin-bottom: 14px;">📱 微信收款码管理</h3>
-        <div class="flex-row">
-          <div v-if="qrcodeUrl" style="display:flex; align-items:center; gap:16px;">
-            <img :src="qrcodeUrl" class="qrcode-preview" alt="收款码" />
-            <div>
-              <div style="font-size:13px; color:#64748b;">当前收款码</div>
-              <button class="btn btn-outline" @click="deleteQRCode" style="color:#ef4444;">🗑️ 删除</button>
-            </div>
-          </div>
-          <div v-else class="text-muted">暂未上传收款码</div>
-          <div class="upload-area" @click="$refs.qrInput.click()" style="flex:1; max-width:300px;">
-            <div>📤 点击上传收款码</div>
-            <div style="font-size:12px; color:#94a3b8;">支持 PNG / JPG</div>
-            <input type="file" ref="qrInput" class="file-input-hidden" accept="image/*" @change="uploadQRCode" />
-          </div>
+      <!-- Tab切换 -->
+      <div class="tabs">
+        <div class="tab" :class="{active: currentTab === 'orders'}" @click="currentTab = 'orders'">
+          📋 订单管理 ({{ orders.length }})
+        </div>
+        <div class="tab" :class="{active: currentTab === 'menu'}" @click="currentTab = 'menu'">
+          📦 菜品管理 ({{ menuItems.length }})
+        </div>
+        <div class="tab" :class="{active: currentTab === 'categories'}" @click="currentTab = 'categories'">
+          🏷️ 分类管理 ({{ categories.length }})
+        </div>
+        <div class="tab" :class="{active: currentTab === 'settings'}" @click="currentTab = 'settings'">
+          ⚙️ 收款码设置
         </div>
       </div>
 
-      <!-- ====== 添加菜品 ====== -->
-      <div class="card">
-        <h3 style="margin-bottom: 14px;">➕ 新增菜品</h3>
-        <div class="grid-2">
-          <div>
-            <div class="form-group"><label>菜名 *</label><input v-model="newItem.name" placeholder="如：招牌红烧肉" /></div>
-            <div class="form-group"><label>价格 (元) *</label><input v-model.number="newItem.price" type="number" step="0.1" placeholder="39.9" /></div>
-            <div class="form-group"><label>分类</label><input v-model="newItem.category" placeholder="热销/主食" /></div>
-          </div>
-          <div>
-            <div class="form-group"><label>描述</label><textarea v-model="newItem.description" placeholder="口味/食材" rows="2"></textarea></div>
-            <div class="form-group">
-              <label>菜品图片</label>
-              <div class="upload-area" @click="$refs.foodInput.click()">
-                <div>📤 点击上传菜品图片</div>
-                <div style="font-size:12px; color:#94a3b8;">支持 PNG / JPG</div>
-                <input type="file" ref="foodInput" class="file-input-hidden" accept="image/*" @change="uploadFoodImage" />
+      <!-- ====== 订单管理 ====== -->
+      <div v-if="currentTab === 'orders'">
+        <div class="card">
+          <h3>📋 订单列表</h3>
+          <div v-if="orders.length === 0" class="text-muted" style="padding:30px; text-align:center;">暂无订单</div>
+          <div v-for="order in orders" :key="order.id" class="order-card">
+            <div class="order-header">
+              <div>
+                <strong>#{{ order.order_no }}</strong>
+                <span class="badge" :class="{
+                  'badge-success': order.status === 'completed',
+                  'badge-warning': order.status === 'pending',
+                  'badge-danger': order.status === 'cancelled'
+                }">{{ getStatusText(order.status) }}</span>
               </div>
-              <img v-if="newItem.image_url" :src="newItem.image_url" class="preview-img" style="margin-top:8px;" />
-              <span v-else class="text-muted" style="font-size:12px; margin-left:8px;">未选择图片</span>
+              <div style="font-size:13px; color:#64748b;">
+                {{ formatTime(order.created_at) }}
+              </div>
+            </div>
+            <div class="order-items">
+              <div v-for="item in order.items" :key="item.id">
+                {{ item.name }} × {{ item.qty }} = ¥{{ (item.price * item.qty).toFixed(2) }}
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-top:8px;">
+              <div>
+                <span class="order-total">¥{{ order.total_amount.toFixed(2) }}</span>
+                <span v-if="order.remark" style="font-size:13px; color:#64748b; margin-left:12px;">📝 {{ order.remark }}</span>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-success btn-sm" @click="updateOrderStatus(order.id, 'completed')">✅ 完成</button>
+                <button class="btn btn-danger btn-sm" @click="updateOrderStatus(order.id, 'cancelled')">❌ 取消</button>
+              </div>
             </div>
           </div>
         </div>
-        <button class="btn btn-primary" @click="addItem">✅ 添加菜品</button>
-        <button class="btn btn-outline" @click="resetForm" style="margin-left:10px;">清空</button>
       </div>
 
-      <!-- ====== 菜单列表 ====== -->
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-          <h3>📋 菜单 ({{ menuItems.length }})</h3>
-          <span class="badge">商家ID: {{ merchantId }}</span>
-        </div>
-        <div class="menu-grid">
-          <div class="menu-item" v-for="item in menuItems" :key="item.id">
-            <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" />
-            <h4>{{ item.name }}</h4>
-            <div class="price">¥ {{ Number(item.price).toFixed(2) }}</div>
-            <div style="font-size:12px; color:#64748b;">{{ item.category || '未分类' }}</div>
-            <div class="actions">
-              <button class="btn btn-outline" style="padding:4px 12px; font-size:12px;" @click="deleteItem(item.id)">🗑️</button>
-              <button class="btn btn-outline" style="padding:4px 12px; font-size:12px;" @click="startEdit(item)">✏️</button>
-            </div>
+      <!-- ====== 分类管理 ====== -->
+      <div v-if="currentTab === 'categories'">
+        <div class="card">
+          <h3 style="margin-bottom:14px;">🏷️ 分类管理</h3>
+          <div class="flex-row" style="margin-bottom:16px;">
+            <input v-model="newCategoryName" placeholder="输入新分类名称" style="padding:10px 14px; border:1px solid #d1d9e6; border-radius:12px; flex:1; min-width:200px;" />
+            <button class="btn btn-primary" @click="addCategory">➕ 添加分类</button>
           </div>
-          <div v-if="menuItems.length === 0" class="text-muted" style="grid-column:1/-1; text-align:center; padding:30px;">暂无菜品，快来添加吧 🍳</div>
-        </div>
-      </div>
-
-      <!-- ====== 编辑弹窗 ====== -->
-      <div v-if="editing" class="card" style="border:2px solid #2563eb; background:#f8fafc;">
-        <h4>✏️ 编辑菜品</h4>
-        <div class="grid-2">
-          <div class="form-group"><label>菜名</label><input v-model="editForm.name" /></div>
-          <div class="form-group"><label>价格</label><input v-model.number="editForm.price" type="number" step="0.1" /></div>
-          <div class="form-group"><label>描述</label><input v-model="editForm.description" /></div>
-          <div class="form-group"><label>分类</label><input v-model="editForm.category" /></div>
-          <div class="form-group" style="grid-column:1/-1;">
-            <label>菜品图片</label>
-            <div class="flex-row">
-              <img v-if="editForm.image_url" :src="editForm.image_url" class="preview-img" />
-              <button class="btn btn-outline" @click="$refs.editFoodInput.click()">更换图片</button>
-              <input type="file" ref="editFoodInput" class="file-input-hidden" accept="image/*" @change="uploadEditFoodImage" />
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <div v-for="cat in categories" :key="cat.id" style="background:#f1f5f9; padding:8px 16px; border-radius:20px; display:flex; align-items:center; gap:8px;">
+              <span>{{ cat.name }}</span>
+              <span style="font-size:12px; color:#94a3b8;">({{ getCategoryItemCount(cat.id) }})</span>
+              <button class="btn btn-danger btn-sm" @click="deleteCategory(cat.id)" style="padding:2px 8px;">×</button>
             </div>
           </div>
         </div>
-        <button class="btn btn-primary" @click="saveEdit">💾 保存</button>
-        <button class="btn btn-outline" @click="editing = null">取消</button>
+
+        <!-- 菜品分类管理 -->
+        <div class="card">
+          <h3 style="margin-bottom:14px;">📦 菜品分类设置</h3>
+          <div class="menu-grid">
+            <div v-for="item in menuItems" :key="item.id" class="menu-item">
+              <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" />
+              <h4>{{ item.name }}</h4>
+              <div class="price">¥ {{ Number(item.price).toFixed(2) }}</div>
+              <select v-model="item.category_id" @change="updateItemCategory(item)" style="width:100%; padding:4px 8px; border-radius:8px; border:1px solid #d1d9e6; margin-top:4px;">
+                <option value="">未分类</option>
+                <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- ====== 关于 ====== -->
+      <!-- ====== 菜品管理 ====== -->
+      <div v-if="currentTab === 'menu'">
+        <div class="card">
+          <h3 style="margin-bottom:14px;">➕ 新增菜品</h3>
+          <div class="grid-2">
+            <div>
+              <div class="form-group"><label>菜名 *</label><input v-model="newItem.name" placeholder="如：招牌红烧肉" /></div>
+              <div class="form-group"><label>价格 (元) *</label><input v-model.number="newItem.price" type="number" step="0.1" placeholder="39.9" /></div>
+              <div class="form-group">
+                <label>分类</label>
+                <select v-model="newItem.category_id">
+                  <option value="">未分类</option>
+                  <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <div class="form-group"><label>描述</label><textarea v-model="newItem.description" placeholder="口味/食材" rows="2"></textarea></div>
+              <div class="form-group">
+                <label>菜品图片</label>
+                <div class="upload-area" @click="$refs.foodInput.click()">
+                  <div>📤 点击上传菜品图片</div>
+                  <div style="font-size:12px; color:#94a3b8;">支持 PNG / JPG</div>
+                  <input type="file" ref="foodInput" class="file-input-hidden" accept="image/*" @change="uploadFoodImage" />
+                </div>
+                <img v-if="newItem.image_url" :src="newItem.image_url" class="preview-img" style="margin-top:8px;" />
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" @click="addItem">✅ 添加菜品</button>
+          <button class="btn btn-outline" @click="resetForm" style="margin-left:10px;">清空</button>
+        </div>
+
+        <div class="card">
+          <h3>📋 菜品列表 ({{ menuItems.length }})</h3>
+          <div class="menu-grid">
+            <div class="menu-item" v-for="item in menuItems" :key="item.id">
+              <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" />
+              <h4>{{ item.name }}</h4>
+              <div class="price">¥ {{ Number(item.price).toFixed(2) }}</div>
+              <div style="font-size:12px; color:#64748b;">
+                <span class="category-tag">{{ getCategoryName(item.category_id) || '未分类' }}</span>
+              </div>
+              <div class="actions">
+                <button class="btn btn-danger btn-sm" @click="deleteItem(item.id)">🗑️</button>
+                <button class="btn btn-outline btn-sm" @click="startEdit(item)">✏️</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 编辑弹窗 -->
+        <div v-if="editing" class="card" style="border:2px solid #2563eb; background:#f8fafc;">
+          <h4>✏️ 编辑菜品</h4>
+          <div class="grid-2">
+            <div class="form-group"><label>菜名</label><input v-model="editForm.name" /></div>
+            <div class="form-group"><label>价格</label><input v-model.number="editForm.price" type="number" step="0.1" /></div>
+            <div class="form-group"><label>描述</label><input v-model="editForm.description" /></div>
+            <div class="form-group">
+              <label>分类</label>
+              <select v-model="editForm.category_id">
+                <option value="">未分类</option>
+                <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary" @click="saveEdit">💾 保存</button>
+          <button class="btn btn-outline" @click="editing = null">取消</button>
+        </div>
+      </div>
+
+      <!-- ====== 收款码设置 ====== -->
+      <div v-if="currentTab === 'settings'">
+        <div class="card">
+          <h3 style="margin-bottom:14px;">📱 微信收款码管理</h3>
+          <div class="flex-row">
+            <div v-if="qrcodeUrl" style="display:flex; align-items:center; gap:16px;">
+              <img :src="qrcodeUrl" class="qrcode-preview" alt="收款码" />
+              <div>
+                <div style="font-size:13px; color:#64748b;">当前收款码</div>
+                <button class="btn btn-danger btn-sm" @click="deleteQRCode">🗑️ 删除</button>
+              </div>
+            </div>
+            <div v-else class="text-muted">暂未上传收款码</div>
+            <div class="upload-area" @click="$refs.qrInput.click()" style="flex:1; max-width:300px;">
+              <div>📤 点击上传收款码</div>
+              <div style="font-size:12px; color:#94a3b8;">支持 PNG / JPG</div>
+              <input type="file" ref="qrInput" class="file-input-hidden" accept="image/*" @change="uploadQRCode" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 关于 -->
       <div class="card" style="background:#fafcff;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
           <span><strong>📌 关于</strong> 版本 <strong>V.0.1</strong></span>
@@ -351,14 +521,10 @@
   </div>
 
   <script>
-    const {
-      createClient
-    } = supabase;
+    const { createClient } = supabase;
 
-    // ========== 您的 Supabase 配置 ==========
     const SUPABASE_URL = 'https://ovysgunescgvhzfeyjhl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92eXNndW5lc2Nndmh6ZmV5amhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3MjI2MjgsImV4cCI6MjEwMzI5ODYyOH0.0dR6fC0S1nMlonVn8OQkxdKbQoXONYeNmk5iQP9Gyf8';
-    // ========================================
 
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -366,234 +532,138 @@
       data() {
         return {
           merchantId: 'merchant_001',
+          currentTab: 'orders',
           menuItems: [],
+          categories: [],
+          orders: [],
           qrcodeUrl: '',
-          newItem: {
-            name: '',
-            price: 0,
-            description: '',
-            image_url: '',
-            category: ''
-          },
+          newItem: { name: '', price: 0, description: '', image_url: '', category_id: '' },
+          newCategoryName: '',
           editing: null,
-          editForm: {
-            id: null,
-            name: '',
-            price: 0,
-            description: '',
-            image_url: '',
-            category: ''
-          },
+          editForm: { id: null, name: '', price: 0, description: '', image_url: '', category_id: '' },
           message: '',
-          messageType: 'success-msg',
-          uploading: false
+          messageType: 'success-msg'
         };
       },
       mounted() {
-        this.fetchMenu();
+        this.fetchAllData();
         this.fetchQRCode();
+        // 每30秒刷新订单
+        setInterval(() => { this.fetchOrders(); }, 30000);
       },
       methods: {
         showMessage(text, type = 'success-msg') {
           this.message = text;
           this.messageType = type;
-          setTimeout(() => {
-            this.message = '';
-          }, 5000);
+          setTimeout(() => { this.message = ''; }, 4000);
         },
 
-        // ========== 收款码相关 ==========
-        async fetchQRCode() {
+        formatTime(time) {
+          if (!time) return '';
+          const d = new Date(time);
+          return d.toLocaleString('zh-CN');
+        },
+
+        getStatusText(status) {
+          const map = { pending: '待处理', completed: '已完成', cancelled: '已取消' };
+          return map[status] || status;
+        },
+
+        getCategoryName(id) {
+          const cat = this.categories.find(c => c.id === id);
+          return cat ? cat.name : '';
+        },
+
+        getCategoryItemCount(categoryId) {
+          return this.menuItems.filter(item => item.category_id === categoryId).length;
+        },
+
+        // ========== 获取所有数据 ==========
+        async fetchAllData() {
+          await Promise.all([
+            this.fetchMenu(),
+            this.fetchCategories(),
+            this.fetchOrders()
+          ]);
+        },
+
+        // ========== 分类管理 ==========
+        async fetchCategories() {
           try {
-            const {
-              data,
-              error
-            } = await supabaseClient
-              .storage
-              .from('qrcode')
-              .list('', { limit: 1 });
+            const { data, error } = await supabaseClient
+              .from('categories')
+              .select('*')
+              .eq('merchant_id', this.merchantId)
+              .order('sort_order', { ascending: true });
 
             if (error) throw error;
-            if (data && data.length > 0) {
-              const {
-                data: publicUrl
-              } = supabaseClient
-                .storage
-                .from('qrcode')
-                .getPublicUrl(data[0].name);
-              this.qrcodeUrl = publicUrl.publicUrl;
-            }
+            this.categories = data || [];
           } catch (err) {
-            console.error('获取收款码失败:', err);
+            console.error('获取分类失败:', err);
           }
         },
 
-        async uploadQRCode(event) {
-          const file = event.target.files[0];
-          if (!file) return;
-
-          this.uploading = true;
+        async addCategory() {
+          if (!this.newCategoryName.trim()) {
+            this.showMessage('❌ 请输入分类名称', 'error-msg');
+            return;
+          }
           try {
-            // 先删除旧收款码
-            const {
-              data: list
-            } = await supabaseClient.storage.from('qrcode').list('');
-            if (list && list.length > 0) {
-              for (let item of list) {
-                await supabaseClient.storage.from('qrcode').remove([item.name]);
-              }
-            }
-
-            // 上传新收款码
-            const fileExt = file.name.split('.').pop();
-            const fileName = `qrcode_${Date.now()}.${fileExt}`;
-            const {
-              error
-            } = await supabaseClient.storage
-              .from('qrcode')
-              .upload(fileName, file);
+            const { data, error } = await supabaseClient
+              .from('categories')
+              .insert([{ name: this.newCategoryName.trim(), merchant_id: this.merchantId }])
+              .select();
 
             if (error) throw error;
-
-            const {
-              data: publicUrl
-            } = supabaseClient.storage
-              .from('qrcode')
-              .getPublicUrl(fileName);
-            this.qrcodeUrl = publicUrl.publicUrl;
-            this.showMessage('✅ 收款码上传成功！', 'success-msg');
+            this.categories.push(data[0]);
+            this.newCategoryName = '';
+            this.showMessage('✅ 分类添加成功', 'success-msg');
           } catch (err) {
-            this.showMessage('❌ 上传失败: ' + err.message, 'error-msg');
-            console.error(err);
+            this.showMessage('❌ 添加失败: ' + err.message, 'error-msg');
           }
-          this.uploading = false;
-          event.target.value = '';
         },
 
-        async deleteQRCode() {
-          if (!confirm('确认删除收款码？')) return;
+        async deleteCategory(id) {
+          if (!confirm('确认删除此分类？')) return;
           try {
-            const {
-              data: list
-            } = await supabaseClient.storage.from('qrcode').list('');
-            if (list && list.length > 0) {
-              for (let item of list) {
-                await supabaseClient.storage.from('qrcode').remove([item.name]);
-              }
-            }
-            this.qrcodeUrl = '';
-            this.showMessage('✅ 收款码已删除', 'success-msg');
+            // 先将该分类下的菜品移出
+            await supabaseClient
+              .from('menu')
+              .update({ category_id: null })
+              .eq('category_id', id);
+
+            const { error } = await supabaseClient
+              .from('categories')
+              .delete()
+              .eq('id', id);
+
+            if (error) throw error;
+            this.categories = this.categories.filter(c => c.id !== id);
+            await this.fetchMenu();
+            this.showMessage('✅ 分类已删除', 'success-msg');
           } catch (err) {
             this.showMessage('❌ 删除失败: ' + err.message, 'error-msg');
           }
         },
 
-        // ========== 菜品图片上传 ==========
-        async uploadFoodImage(event) {
-          const file = event.target.files[0];
-          if (!file) {
-            this.showMessage('❌ 请选择图片文件', 'error-msg');
-            return;
-          }
-
-          // 检查文件大小（限制5MB）
-          if (file.size > 5 * 1024 * 1024) {
-            this.showMessage('❌ 图片大小不能超过5MB', 'error-msg');
-            event.target.value = '';
-            return;
-          }
-
-          this.uploading = true;
+        async updateItemCategory(item) {
           try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `food_${Date.now()}.${fileExt}`;
-
-            console.log('开始上传图片:', fileName);
-
-            const {
-              data,
-              error
-            } = await supabaseClient.storage
-              .from('foods')
-              .upload(fileName, file, {
-                cacheControl: '3600',
-                upsert: false
-              });
-
-            if (error) {
-              console.error('上传错误详情:', error);
-              throw error;
-            }
-
-            console.log('上传成功:', data);
-
-            // 获取公开URL
-            const {
-              data: publicUrl
-            } = supabaseClient.storage
-              .from('foods')
-              .getPublicUrl(fileName);
-
-            this.newItem.image_url = publicUrl.publicUrl;
-            this.showMessage('✅ 菜品图片上传成功！', 'success-msg');
-            console.log('图片URL:', publicUrl.publicUrl);
-          } catch (err) {
-            console.error('上传失败:', err);
-            this.showMessage('❌ 图片上传失败: ' + err.message, 'error-msg');
-          }
-          this.uploading = false;
-          event.target.value = '';
-        },
-
-        async uploadEditFoodImage(event) {
-          const file = event.target.files[0];
-          if (!file) {
-            this.showMessage('❌ 请选择图片文件', 'error-msg');
-            return;
-          }
-
-          if (file.size > 5 * 1024 * 1024) {
-            this.showMessage('❌ 图片大小不能超过5MB', 'error-msg');
-            event.target.value = '';
-            return;
-          }
-
-          this.uploading = true;
-          try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `food_${Date.now()}.${fileExt}`;
-
-            const {
-              error
-            } = await supabaseClient.storage
-              .from('foods')
-              .upload(fileName, file);
+            const { error } = await supabaseClient
+              .from('menu')
+              .update({ category_id: item.category_id || null })
+              .eq('id', item.id);
 
             if (error) throw error;
-
-            const {
-              data: publicUrl
-            } = supabaseClient.storage
-              .from('foods')
-              .getPublicUrl(fileName);
-
-            this.editForm.image_url = publicUrl.publicUrl;
-            this.showMessage('✅ 图片上传成功！', 'success-msg');
+            this.showMessage('✅ 分类已更新', 'success-msg');
           } catch (err) {
-            this.showMessage('❌ 图片上传失败: ' + err.message, 'error-msg');
-            console.error(err);
+            this.showMessage('❌ 更新失败: ' + err.message, 'error-msg');
           }
-          this.uploading = false;
-          event.target.value = '';
         },
 
         // ========== 菜品管理 ==========
         async fetchMenu() {
           try {
-            const {
-              data,
-              error
-            } = await supabaseClient
+            const { data, error } = await supabaseClient
               .from('menu')
               .select('*')
               .eq('merchant_id', this.merchantId)
@@ -601,53 +671,44 @@
 
             if (error) throw error;
             this.menuItems = data || [];
-            this.showMessage('✅ 菜单已刷新', 'success-msg');
           } catch (err) {
-            this.showMessage('❌ 获取菜单失败: ' + err.message, 'error-msg');
-            console.error(err);
+            console.error('获取菜单失败:', err);
           }
         },
 
         async addItem() {
-          const { name, price, description, image_url, category } = this.newItem;
+          const { name, price, description, image_url, category_id } = this.newItem;
           if (!name || price <= 0) {
             this.showMessage('❌ 请填写菜名和价格', 'error-msg');
             return;
           }
 
           try {
-            const {
-              data,
-              error
-            } = await supabaseClient
+            const { data, error } = await supabaseClient
               .from('menu')
               .insert([{
                 name,
                 price,
                 description: description || '',
                 image_url: image_url || '',
-                category: category || '',
+                category_id: category_id || null,
                 merchant_id: this.merchantId
               }])
               .select();
 
             if (error) throw error;
-
             this.menuItems.unshift(data[0]);
             this.resetForm();
             this.showMessage('✅ 菜品添加成功！', 'success-msg');
           } catch (err) {
             this.showMessage('❌ 添加失败: ' + err.message, 'error-msg');
-            console.error(err);
           }
         },
 
         async deleteItem(id) {
           if (!confirm('确认删除此菜品？')) return;
           try {
-            const {
-              error
-            } = await supabaseClient
+            const { error } = await supabaseClient
               .from('menu')
               .delete()
               .eq('id', id);
@@ -666,18 +727,16 @@
         },
 
         async saveEdit() {
-          const { id, name, price, description, image_url, category } = this.editForm;
+          const { id, name, price, description, image_url, category_id } = this.editForm;
           if (!name || price <= 0) {
             this.showMessage('❌ 菜名和价格必须有效', 'error-msg');
             return;
           }
 
           try {
-            const {
-              error
-            } = await supabaseClient
+            const { error } = await supabaseClient
               .from('menu')
-              .update({ name, price, description, image_url, category })
+              .update({ name, price, description, image_url, category_id: category_id || null })
               .eq('id', id);
 
             if (error) throw error;
@@ -692,29 +751,132 @@
         },
 
         resetForm() {
-          this.newItem = { name: '', price: 0, description: '', image_url: '', category: '' };
+          this.newItem = { name: '', price: 0, description: '', image_url: '', category_id: '' };
         },
 
-        async addSample() {
-          const samples = [
-            { name: '红烧肉', price: 39.9, description: '肥而不腻，入口即化', image_url: 'https://placehold.co/300x200/e9edf2/2563eb?text=🥩', category: '热销' },
-            { name: '清蒸鲈鱼', price: 49.9, description: '鲜嫩爽滑，原汁原味', image_url: 'https://placehold.co/300x200/e9edf2/2563eb?text=🐟', category: '海鲜' },
-            { name: '蒜蓉西兰花', price: 19.9, description: '清脆爽口，营养健康', image_url: 'https://placehold.co/300x200/e9edf2/2563eb?text=🥦', category: '素菜' }
-          ];
+        // ========== 图片上传 ==========
+        async uploadFoodImage(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          if (file.size > 5 * 1024 * 1024) {
+            this.showMessage('❌ 图片大小不能超过5MB', 'error-msg');
+            return;
+          }
 
           try {
-            for (let item of samples) {
-              const {
-                error
-              } = await supabaseClient
-                .from('menu')
-                .insert([{ ...item, merchant_id: this.merchantId }]);
-              if (error) throw error;
-            }
-            await this.fetchMenu();
-            this.showMessage('✅ 已添加3条示例数据', 'success-msg');
+            const fileExt = file.name.split('.').pop();
+            const fileName = `food_${Date.now()}.${fileExt}`;
+
+            const { error } = await supabaseClient.storage
+              .from('foods')
+              .upload(fileName, file);
+
+            if (error) throw error;
+
+            const { data: publicUrl } = supabaseClient.storage
+              .from('foods')
+              .getPublicUrl(fileName);
+
+            this.newItem.image_url = publicUrl.publicUrl;
+            this.showMessage('✅ 图片上传成功！', 'success-msg');
           } catch (err) {
-            this.showMessage('❌ 示例添加失败: ' + err.message, 'error-msg');
+            this.showMessage('❌ 图片上传失败: ' + err.message, 'error-msg');
+          }
+          event.target.value = '';
+        },
+
+        // ========== 订单管理 ==========
+        async fetchOrders() {
+          try {
+            const { data, error } = await supabaseClient
+              .from('orders')
+              .select('*')
+              .eq('merchant_id', this.merchantId)
+              .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            this.orders = data || [];
+          } catch (err) {
+            console.error('获取订单失败:', err);
+          }
+        },
+
+        async updateOrderStatus(id, status) {
+          try {
+            const { error } = await supabaseClient
+              .from('orders')
+              .update({ status, updated_at: new Date().toISOString() })
+              .eq('id', id);
+
+            if (error) throw error;
+            const order = this.orders.find(o => o.id === id);
+            if (order) order.status = status;
+            this.showMessage('✅ 订单状态已更新', 'success-msg');
+          } catch (err) {
+            this.showMessage('❌ 更新失败: ' + err.message, 'error-msg');
+          }
+        },
+
+        // ========== 收款码 ==========
+        async fetchQRCode() {
+          try {
+            const { data } = await supabaseClient.storage.from('qrcode').list('');
+            if (data && data.length > 0) {
+              const { data: publicUrl } = supabaseClient.storage
+                .from('qrcode')
+                .getPublicUrl(data[0].name);
+              this.qrcodeUrl = publicUrl.publicUrl;
+            }
+          } catch (err) {
+            console.error('获取收款码失败:', err);
+          }
+        },
+
+        async uploadQRCode(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          try {
+            const { data: list } = await supabaseClient.storage.from('qrcode').list('');
+            if (list && list.length > 0) {
+              for (let item of list) {
+                await supabaseClient.storage.from('qrcode').remove([item.name]);
+              }
+            }
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `qrcode_${Date.now()}.${fileExt}`;
+            const { error } = await supabaseClient.storage
+              .from('qrcode')
+              .upload(fileName, file);
+
+            if (error) throw error;
+
+            const { data: publicUrl } = supabaseClient.storage
+              .from('qrcode')
+              .getPublicUrl(fileName);
+            this.qrcodeUrl = publicUrl.publicUrl;
+            this.showMessage('✅ 收款码上传成功！', 'success-msg');
+          } catch (err) {
+            this.showMessage('❌ 上传失败: ' + err.message, 'error-msg');
+          }
+          event.target.value = '';
+        },
+
+        async deleteQRCode() {
+          if (!confirm('确认删除收款码？')) return;
+          try {
+            const { data: list } = await supabaseClient.storage.from('qrcode').list('');
+            if (list && list.length > 0) {
+              for (let item of list) {
+                await supabaseClient.storage.from('qrcode').remove([item.name]);
+              }
+            }
+            this.qrcodeUrl = '';
+            this.showMessage('✅ 收款码已删除', 'success-msg');
+          } catch (err) {
+            this.showMessage('❌ 删除失败: ' + err.message, 'error-msg');
           }
         }
       }

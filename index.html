@@ -2,8 +2,8 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>运光点单 · 客户端</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>运光点单 · 点餐</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
   </script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js">
@@ -16,27 +16,31 @@
       font-family: system-ui, -apple-system, sans-serif;
     }
     body {
-      background: #f0f4f9;
-      padding: 20px;
+      background: #f5f7fa;
+      padding: 0;
+      margin: 0;
+      padding-bottom: 80px;
     }
-    .container {
-      max-width: 1100px;
+    .app-container {
+      max-width: 480px;
       margin: 0 auto;
+      background: #f5f7fa;
+      min-height: 100vh;
+      position: relative;
     }
     header {
       background: white;
-      padding: 16px 24px;
-      border-radius: 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      padding: 14px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      gap: 12px;
     }
     .logo {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 700;
     }
     .logo span {
@@ -45,13 +49,12 @@
       -webkit-text-fill-color: transparent;
     }
     .btn {
-      padding: 8px 20px;
-      border-radius: 30px;
+      padding: 6px 16px;
+      border-radius: 20px;
       border: 1px solid #d1d5db;
       background: white;
       cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
+      font-size: 13px;
       transition: 0.2s;
     }
     .btn-primary {
@@ -70,113 +73,203 @@
     .btn-success:hover {
       background: #16a34a;
     }
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+      border-color: #ef4444;
+    }
     .btn-outline {
       background: transparent;
     }
-    .btn-outline:hover {
-      background: #f1f5f9;
+    .btn-sm {
+      padding: 4px 12px;
+      font-size: 12px;
     }
-    .card {
+
+    /* 分类导航 */
+    .category-nav {
       background: white;
-      border-radius: 16px;
-      padding: 20px 24px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      margin-bottom: 20px;
+      padding: 10px 16px;
+      overflow-x: auto;
+      white-space: nowrap;
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid #f1f5f9;
+      position: sticky;
+      top: 60px;
+      z-index: 99;
+    }
+    .category-nav::-webkit-scrollbar {
+      display: none;
+    }
+    .category-item {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      background: #f1f5f9;
+      color: #64748b;
+      transition: 0.2s;
+      flex-shrink: 0;
+    }
+    .category-item.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    /* 菜品列表 */
+    .menu-section {
+      padding: 12px 16px;
+    }
+    .menu-section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      padding-left: 4px;
     }
     .menu-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 16px;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
     .menu-item {
-      background: #fafcff;
+      background: white;
       border-radius: 16px;
       padding: 12px;
-      border: 1px solid #eef2f6;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-    .menu-item:hover {
-      border-color: #2563eb;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      transition: 0.2s;
     }
     .menu-item img {
       width: 100%;
-      height: 120px;
+      height: 130px;
       object-fit: cover;
       border-radius: 12px;
       background: #e9edf2;
     }
     .menu-item h4 {
-      margin: 8px 0 4px;
       font-size: 15px;
+      margin: 6px 0 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .menu-item .price {
       font-weight: 700;
-      color: #0f172a;
+      color: #f43f5e;
+      font-size: 16px;
     }
-    .menu-item .add-btn {
-      margin-top: 8px;
-      width: 100%;
-      padding: 6px;
-      border-radius: 30px;
-      border: 1px solid #2563eb;
-      background: transparent;
-      color: #2563eb;
-      cursor: pointer;
-      font-weight: 600;
+    .menu-item .desc {
+      font-size: 12px;
+      color: #94a3b8;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
-    .menu-item .add-btn:hover {
-      background: #2563eb;
-      color: white;
-    }
-    .cart-side {
-      background: white;
-      border-radius: 16px;
-      padding: 16px 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      position: sticky;
-      top: 20px;
-    }
-    .cart-item {
+
+    /* 购物车按钮 - 美团风格 */
+    .cart-control {
       display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid #f1f5f9;
-    }
-    .cart-item .qty {
-      display: flex;
-      gap: 8px;
       align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
     }
-    .cart-item .qty button {
+    .qty-control {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      border-radius: 20px;
+      padding: 2px 4px;
+    }
+    .qty-control button {
       width: 24px;
       height: 24px;
       border-radius: 50%;
-      border: 1px solid #d1d5db;
+      border: none;
       background: white;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+    .qty-control button:active {
+      transform: scale(0.9);
+    }
+    .qty-control .qty-num {
+      min-width: 20px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .add-btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
       cursor: pointer;
     }
-    .total {
-      font-size: 20px;
+    .add-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* 底部购物车 */
+    .cart-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: white;
+      padding: 12px 16px;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 200;
+    }
+    .cart-bar .cart-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .cart-bar .cart-count {
+      background: #2563eb;
+      color: white;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
       font-weight: 700;
-      margin: 12px 0;
     }
-    .text-muted {
-      color: #64748b;
-      font-size: 13px;
+    .cart-bar .cart-total {
+      font-weight: 700;
+      font-size: 18px;
+      color: #f43f5e;
     }
-    .footer {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid #e2e8f0;
-      text-align: center;
-      font-size: 13px;
-      color: #94a3b8;
-      font-family: '楷体', 'KaiTi', serif;
+    .cart-bar .checkout-btn {
+      background: #22c55e;
+      color: white;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
     }
-    .qrcode-modal {
+    .cart-bar .checkout-btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    /* 结算页弹窗 */
+    .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
@@ -184,140 +277,290 @@
       height: 100%;
       background: rgba(0, 0, 0, 0.5);
       display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 300;
+      animation: fadeIn 0.3s;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 24px 24px 0 0;
+      padding: 24px 20px;
+      max-width: 480px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+      to {
+        transform: translateY(0);
+      }
+    }
+    .modal-content .close-btn {
+      float: right;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #94a3b8;
+    }
+    .modal-content h3 {
+      margin-bottom: 16px;
+    }
+    .modal-order-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .modal-order-item .qty-info {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .modal-total {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 12px 0;
+      text-align: right;
+      color: #f43f5e;
+    }
+    .modal-remark {
+      margin: 12px 0;
+    }
+    .modal-remark textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d1d9e6;
+      border-radius: 12px;
+      resize: vertical;
+      font-size: 14px;
+    }
+    .modal-pay-btn {
+      width: 100%;
+      padding: 14px;
+      background: #22c55e;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    .modal-pay-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+    }
+    .empty-state .icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    /* 收款码弹窗 */
+    .qrcode-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 400;
     }
     .qrcode-box {
       background: white;
       border-radius: 24px;
-      padding: 30px 40px;
-      max-width: 420px;
+      padding: 30px 24px;
+      max-width: 380px;
+      width: 90%;
       text-align: center;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
     .qrcode-box img {
-      width: 250px;
-      height: 250px;
+      width: 220px;
+      height: 220px;
       object-fit: contain;
-      margin: 10px 0;
+      margin: 12px 0;
       border-radius: 12px;
     }
     .qrcode-box .close-btn {
-      margin-top: 16px;
+      margin-top: 12px;
+      padding: 8px 32px;
+      border: 1px solid #d1d5db;
+      border-radius: 30px;
+      background: white;
+      cursor: pointer;
     }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr;
-      gap: 24px;
+
+    .text-muted {
+      color: #94a3b8;
+      font-size: 13px;
     }
-    @media (max-width: 800px) {
-      .grid-2 {
-        grid-template-columns: 1fr;
-      }
+    .text-center {
+      text-align: center;
     }
-    .success-msg {
-      background: #dcfce7;
-      color: #166534;
-      padding: 10px 16px;
-      border-radius: 12px;
-      margin-bottom: 12px;
+    .mt-2 {
+      margin-top: 8px;
     }
-    .error-msg {
-      background: #fee2e2;
-      color: #991b1b;
-      padding: 10px 16px;
-      border-radius: 12px;
-      margin-bottom: 12px;
+    .mb-2 {
+      margin-bottom: 8px;
+    }
+    .flex-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
     }
   </style>
 </head>
 <body>
   <div id="app">
-    <div class="container">
+    <div class="app-container">
+      <!-- 头部 -->
       <header>
-        <div class="logo">🍽️ <span>运光点单</span> · 客户端</div>
-        <div>
-          <button class="btn btn-outline" @click="fetchMenu">🔄 刷新菜单</button>
-          <button class="btn btn-outline" @click="clearCart">🗑️ 清空购物车</button>
+        <div class="logo">🍽️ <span>运光点单</span></div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-outline btn-sm" @click="fetchMenu">🔄</button>
+          <button class="btn btn-outline btn-sm" @click="showOrders = !showOrders">📋</button>
         </div>
       </header>
 
-      <!-- 消息提示 -->
-      <div v-if="message" :class="messageType" style="padding:12px 20px; border-radius:12px; margin-bottom:16px;">
-        {{ message }}
+      <!-- 分类导航 -->
+      <div class="category-nav" v-if="categories.length > 0">
+        <div class="category-item" :class="{active: currentCategory === ''}" @click="currentCategory = ''">全部</div>
+        <div class="category-item" v-for="cat in categories" :key="cat.id" :class="{active: currentCategory === cat.id}" @click="currentCategory = cat.id">
+          {{ cat.name }}
+        </div>
       </div>
 
-      <div class="grid-2">
-        <!-- 菜单 -->
-        <div>
-          <div class="menu-grid">
-            <div class="menu-item" v-for="item in menuItems" :key="item.id">
-              <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" />
-              <h4>{{ item.name }}</h4>
-              <div class="price">¥ {{ Number(item.price).toFixed(2) }}</div>
-              <div style="font-size:12px; color:#64748b;">{{ item.category || '未分类' }}</div>
-              <button class="add-btn" @click="addToCart(item)">➕ 加入购物车</button>
-            </div>
-            <div v-if="menuItems.length === 0" class="text-muted" style="grid-column:1/-1; text-align:center; padding:30px;">暂无菜品，商家正在准备中...</div>
-          </div>
-        </div>
-
-        <!-- 购物车 -->
-        <div>
-          <div class="cart-side">
-            <h3>🛒 购物车</h3>
-            <div v-if="cart.length === 0" class="text-muted" style="padding:20px 0;">购物车是空的</div>
-            <div v-for="(item, index) in cart" :key="item.id" class="cart-item">
-              <span>{{ item.name }}</span>
-              <div class="qty">
-                <button @click="changeQty(index, -1)">−</button>
-                <span>{{ item.qty }}</span>
-                <button @click="changeQty(index, 1)">+</button>
-                <span style="margin-left:8px; font-weight:600;">¥ {{ (item.price * item.qty).toFixed(2) }}</span>
+      <!-- 菜品列表 -->
+      <div class="menu-section" v-if="filteredMenu.length > 0">
+        <div class="menu-grid">
+          <div class="menu-item" v-for="item in filteredMenu" :key="item.id">
+            <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" />
+            <h4>{{ item.name }}</h4>
+            <div class="price">¥{{ Number(item.price).toFixed(2) }}</div>
+            <div class="desc">{{ item.description || '' }}</div>
+            <div class="cart-control">
+              <div class="qty-control" v-if="getCartQty(item.id) > 0">
+                <button @click="changeQty(item, -1)">−</button>
+                <span class="qty-num">{{ getCartQty(item.id) }}</span>
+                <button @click="changeQty(item, 1)">+</button>
               </div>
-            </div>
-            <div class="total">合计：¥ {{ totalPrice.toFixed(2) }}</div>
-            <button class="btn btn-success" style="width:100%;" @click="checkout" :disabled="cart.length === 0 || !qrcodeUrl">💳 支付</button>
-            <div style="margin-top:8px; font-size:12px; color:#94a3b8;">
-              <span v-if="!qrcodeUrl">⚠️ 商家暂未设置收款码</span>
-              <span v-else>点击支付弹出收款码</span>
+              <button class="add-btn" v-else @click="addToCart(item)">加入购物车</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 关于 -->
-      <div class="card" style="background:#fafcff;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-          <span><strong>📌 关于</strong> 版本 <strong>V.0.1</strong></span>
-          <span style="font-family:'楷体','KaiTi',serif; color:#94a3b8; font-size:14px;">灿然科技©2026版权所有</span>
+      <!-- 空状态 -->
+      <div v-else class="empty-state">
+        <div class="icon">🍽️</div>
+        <div>暂无菜品</div>
+        <div class="text-muted">商家正在准备菜单...</div>
+      </div>
+
+      <!-- 底部购物车 -->
+      <div class="cart-bar" v-if="cart.length > 0">
+        <div class="cart-info">
+          <div class="cart-count">{{ totalQty }}</div>
+          <div>
+            <div class="cart-total">¥{{ totalPrice.toFixed(2) }}</div>
+            <div class="text-muted" style="font-size:12px;">已选 {{ totalQty }} 件</div>
+          </div>
+        </div>
+        <button class="checkout-btn" @click="openCheckout">去结算</button>
+      </div>
+      <div class="cart-bar" v-else style="justify-content:center;">
+        <span class="text-muted">🛒 购物车是空的</span>
+      </div>
+
+      <!-- 结算弹窗 -->
+      <div v-if="showCheckout" class="modal-overlay" @click.self="showCheckout = false">
+        <div class="modal-content">
+          <button class="close-btn" @click="showCheckout = false">✕</button>
+          <h3>📋 确认订单</h3>
+          <div v-for="item in cart" :key="item.id" class="modal-order-item">
+            <span>{{ item.name }}</span>
+            <div class="qty-info">
+              <span>×{{ item.qty }}</span>
+              <span style="font-weight:600;">¥{{ (item.price * item.qty).toFixed(2) }}</span>
+            </div>
+          </div>
+          <div class="modal-total">合计：¥{{ totalPrice.toFixed(2) }}</div>
+          <div class="modal-remark">
+            <textarea v-model="orderRemark" placeholder="备注信息（如：不要辣、少油等）" rows="3"></textarea>
+          </div>
+          <button class="modal-pay-btn" @click="submitOrder">💳 立即支付 ¥{{ totalPrice.toFixed(2) }}</button>
         </div>
       </div>
-      <div class="footer">运光点单 · 客户端 · 数据实时同步</div>
 
-      <!-- 微信收款码弹窗 -->
+      <!-- 收款码弹窗 -->
       <div v-if="showQR" class="qrcode-modal" @click.self="showQR = false">
         <div class="qrcode-box">
           <h3>💳 微信支付</h3>
-          <p style="color:#64748b; font-size:14px;">请使用微信扫描下方二维码付款</p>
+          <p class="text-muted">应付金额：<strong style="color:#f43f5e;">¥{{ totalPrice.toFixed(2) }}</strong></p>
           <img :src="qrcodeUrl" alt="微信收款码" />
-          <div style="font-size:13px; color:#94a3b8; margin:8px 0;">收款方：运光点单</div>
-          <button class="btn btn-outline close-btn" @click="showQR = false">关闭</button>
+          <p class="text-muted">请使用微信扫描二维码付款</p>
+          <p class="text-muted" style="font-size:12px;">付款后商家将收到订单通知</p>
+          <button class="close-btn" @click="showQR = false">关闭</button>
+        </div>
+      </div>
+
+      <!-- 订单历史 -->
+      <div v-if="showOrders" class="modal-overlay" @click.self="showOrders = false">
+        <div class="modal-content">
+          <button class="close-btn" @click="showOrders = false">✕</button>
+          <h3>📋 我的订单</h3>
+          <div v-if="myOrders.length === 0" class="text-muted text-center" style="padding:30px;">暂无订单</div>
+          <div v-for="order in myOrders" :key="order.id" style="border-bottom:1px solid #f1f5f9; padding:12px 0;">
+            <div style="display:flex; justify-content:space-between; font-size:13px; color:#64748b;">
+              <span>#{{ order.order_no }}</span>
+              <span>{{ formatTime(order.created_at) }}</span>
+            </div>
+            <div style="font-size:14px; margin:4px 0;">
+              <span v-for="(item, idx) in order.items" :key="idx">
+                {{ item.name }}×{{ item.qty }}{{ idx < order.items.length-1 ? '、' : '' }}
+              </span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:700;">¥{{ order.total_amount.toFixed(2) }}</span>
+              <span class="badge" :class="{
+                'badge-success': order.status === 'completed',
+                'badge-warning': order.status === 'pending',
+                'badge-danger': order.status === 'cancelled'
+              }">{{ getStatusText(order.status) }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    const {
-      createClient
-    } = supabase;
+    const { createClient } = supabase;
 
-    // ========== 您的 Supabase 配置 ==========
     const SUPABASE_URL = 'https://ovysgunescgvhzfeyjhl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92eXNndW5lc2Nndmh6ZmV5amhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3MjI2MjgsImV4cCI6MjEwMzI5ODYyOH0.0dR6fC0S1nMlonVn8OQkxdKbQoXONYeNmk5iQP9Gyf8';
-    // ========================================
 
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -326,47 +569,82 @@
         return {
           merchantId: 'merchant_001',
           menuItems: [],
+          categories: [],
           cart: [],
+          currentCategory: '',
+          showCheckout: false,
           showQR: false,
+          showOrders: false,
+          orderRemark: '',
+          myOrders: [],
           qrcodeUrl: '',
-          message: '',
-          messageType: 'success-msg'
+          orderNo: 1
         };
       },
       computed: {
+        filteredMenu() {
+          if (!this.currentCategory) return this.menuItems;
+          return this.menuItems.filter(item => item.category_id === this.currentCategory);
+        },
+        totalQty() {
+          return this.cart.reduce((sum, item) => sum + item.qty, 0);
+        },
         totalPrice() {
           return this.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
         }
       },
       mounted() {
         this.fetchMenu();
+        this.fetchCategories();
         this.fetchQRCode();
+        this.fetchMyOrders();
       },
       methods: {
-        showMessage(text, type = 'success-msg') {
-          this.message = text;
-          this.messageType = type;
-          setTimeout(() => {
-            this.message = '';
-          }, 4000);
+        formatTime(time) {
+          if (!time) return '';
+          const d = new Date(time);
+          return d.toLocaleString('zh-CN');
+        },
+        getStatusText(status) {
+          const map = { pending: '待处理', completed: '已完成', cancelled: '已取消' };
+          return map[status] || status;
+        },
+
+        async fetchMenu() {
+          try {
+            const { data, error } = await supabaseClient
+              .from('menu')
+              .select('*')
+              .eq('merchant_id', this.merchantId)
+              .order('created_at', { ascending: true });
+
+            if (error) throw error;
+            this.menuItems = data || [];
+          } catch (err) {
+            console.error('获取菜单失败:', err);
+          }
+        },
+
+        async fetchCategories() {
+          try {
+            const { data, error } = await supabaseClient
+              .from('categories')
+              .select('*')
+              .eq('merchant_id', this.merchantId)
+              .order('sort_order', { ascending: true });
+
+            if (error) throw error;
+            this.categories = data || [];
+          } catch (err) {
+            console.error('获取分类失败:', err);
+          }
         },
 
         async fetchQRCode() {
           try {
-            const {
-              data,
-              error
-            } = await supabaseClient
-              .storage
-              .from('qrcode')
-              .list('', { limit: 1 });
-
-            if (error) throw error;
+            const { data } = await supabaseClient.storage.from('qrcode').list('');
             if (data && data.length > 0) {
-              const {
-                data: publicUrl
-              } = supabaseClient
-                .storage
+              const { data: publicUrl } = supabaseClient.storage
                 .from('qrcode')
                 .getPublicUrl(data[0].name);
               this.qrcodeUrl = publicUrl.publicUrl;
@@ -376,24 +654,27 @@
           }
         },
 
-        async fetchMenu() {
+        async fetchMyOrders() {
+          // 简单存储：用 localStorage 存储订单号列表
           try {
-            const {
-              data,
-              error
-            } = await supabaseClient
-              .from('menu')
+            const orderIds = JSON.parse(localStorage.getItem('myOrders') || '[]');
+            if (orderIds.length === 0) return;
+            const { data, error } = await supabaseClient
+              .from('orders')
               .select('*')
-              .eq('merchant_id', this.merchantId)
+              .in('id', orderIds)
               .order('created_at', { ascending: false });
 
             if (error) throw error;
-            this.menuItems = data || [];
-            this.showMessage('✅ 菜单已更新', 'success-msg');
+            this.myOrders = data || [];
           } catch (err) {
-            this.showMessage('❌ 获取菜单失败: ' + err.message, 'error-msg');
-            console.error(err);
+            console.error('获取订单失败:', err);
           }
+        },
+
+        getCartQty(id) {
+          const item = this.cart.find(c => c.id === id);
+          return item ? item.qty : 0;
         },
 
         addToCart(item) {
@@ -403,32 +684,63 @@
           } else {
             this.cart.push({ ...item, qty: 1 });
           }
-          this.showMessage('✅ 已加入购物车', 'success-msg');
         },
 
-        changeQty(index, delta) {
-          const item = this.cart[index];
-          item.qty += delta;
-          if (item.qty <= 0) {
-            this.cart.splice(index, 1);
+        changeQty(item, delta) {
+          const existing = this.cart.find(c => c.id === item.id);
+          if (existing) {
+            existing.qty += delta;
+            if (existing.qty <= 0) {
+              this.cart = this.cart.filter(c => c.id !== item.id);
+            }
           }
         },
 
-        clearCart() {
+        openCheckout() {
           if (this.cart.length === 0) return;
-          if (confirm('确认清空购物车？')) {
+          this.showCheckout = true;
+        },
+
+        async submitOrder() {
+          if (this.cart.length === 0) return;
+
+          const orderData = {
+            order_no: 'ORD' + Date.now(),
+            merchant_id: this.merchantId,
+            items: this.cart.map(item => ({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              qty: item.qty,
+              image_url: item.image_url
+            })),
+            total_amount: this.totalPrice,
+            remark: this.orderRemark || '',
+            status: 'pending',
+            created_at: new Date().toISOString()
+          };
+
+          try {
+            const { data, error } = await supabaseClient
+              .from('orders')
+              .insert([orderData])
+              .select();
+
+            if (error) throw error;
+
+            // 保存订单ID到本地
+            const orderIds = JSON.parse(localStorage.getItem('myOrders') || '[]');
+            orderIds.push(data[0].id);
+            localStorage.setItem('myOrders', JSON.stringify(orderIds));
+
+            this.showCheckout = false;
             this.cart = [];
-            this.showMessage('🗑️ 购物车已清空', 'success-msg');
+            this.orderRemark = '';
+            this.showQR = true;
+            this.fetchMyOrders();
+          } catch (err) {
+            alert('下单失败: ' + err.message);
           }
-        },
-
-        checkout() {
-          if (this.cart.length === 0) return;
-          if (!this.qrcodeUrl) {
-            this.showMessage('❌ 商家暂未设置收款码', 'error-msg');
-            return;
-          }
-          this.showQR = true;
         }
       }
     });
