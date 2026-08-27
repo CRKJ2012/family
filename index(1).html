@@ -153,6 +153,7 @@
       object-fit: cover;
       border-radius: 12px;
       background: #e9edf2;
+      cursor: pointer;
     }
     .menu-item h4 {
       margin: 8px 0 4px;
@@ -227,6 +228,7 @@
       border-radius: 8px;
       border: 2px solid #e2e8f0;
       margin-top: 8px;
+      cursor: pointer;
     }
     .qrcode-preview {
       width: 120px;
@@ -336,6 +338,11 @@
     .mb-2 {
       margin-bottom: 8px;
     }
+    .order-payment {
+      font-size: 13px;
+      color: #64748b;
+      margin-left: 12px;
+    }
   </style>
 </head>
 <body>
@@ -391,6 +398,7 @@
                 <span class="badge" :class="getBadgeClass(order.status)">
                   {{ getStatusText(order.status) }}
                 </span>
+                <span class="order-payment">💳 {{ order.payment_method === 'wechat' ? '微信支付' : '现金支付' }}</span>
               </div>
               <div style="font-size:13px; color:#64748b;">
                 {{ formatTime(order.created_at) }}
@@ -491,15 +499,15 @@
           <h3>📋 菜品列表 ({{ menuItems.length }})</h3>
           <div class="menu-grid">
             <div class="menu-item" v-for="item in menuItems" :key="item.id">
-              <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" />
+              <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" @click="showItemDetail(item)" />
               <h4>{{ item.name }}</h4>
               <div class="price">¥ {{ Number(item.price).toFixed(2) }}</div>
               <div style="font-size:12px; color:#64748b;">
                 <span class="category-tag">{{ getCategoryName(item.category_id) || '未分类' }}</span>
               </div>
               <div class="actions" style="margin-top:8px; display:flex; gap:6px;">
+                <button class="btn btn-primary btn-sm" @click="startEdit(item)">✏️ 编辑</button>
                 <button class="btn btn-danger btn-sm" @click="deleteItem(item.id)">🗑️</button>
-                <button class="btn btn-outline btn-sm" @click="startEdit(item)">✏️</button>
               </div>
             </div>
           </div>
@@ -518,6 +526,14 @@
                 <option value="">未分类</option>
                 <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
               </select>
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+              <label>菜品图片</label>
+              <div class="flex-row">
+                <img v-if="editForm.image_url" :src="editForm.image_url" class="preview-img" />
+                <button class="btn btn-outline" @click="$refs.editFoodInput.click()">更换图片</button>
+                <input type="file" ref="editFoodInput" class="file-input-hidden" accept="image/*" @change="uploadEditFoodImage" />
+              </div>
             </div>
           </div>
           <button class="btn btn-primary" @click="saveEdit">💾 保存</button>
@@ -599,7 +615,7 @@
         showMessage(text, type = 'success-msg') {
           this.message = text;
           this.messageType = type;
-          setTimeout(() => { this.message = ''; }, 4000);
+          setTimeout(() => { this.message = ''; }, 5000);
         },
 
         formatTime(time) {
@@ -674,7 +690,11 @@
           try {
             const { data, error } = await supabaseClient
               .from('categories')
-              .insert([{ name: this.newCategoryName.trim(), merchant_id: this.merchantId }])
+              .insert([{
+                name: this.newCategoryName.trim(),
+                merchant_id: this.merchantId,
+                sort_order: this.categories.length + 1
+              }])
               .select();
 
             if (error) throw error;
@@ -848,6 +868,37 @@
           event.target.value = '';
         },
 
+        async uploadEditFoodImage(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          if (file.size > 5 * 1024 * 1024) {
+            this.showMessage('❌ 图片大小不能超过5MB', 'error-msg');
+            return;
+          }
+
+          try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `food_${Date.now()}.${fileExt}`;
+
+            const { error } = await supabaseClient.storage
+              .from('foods')
+              .upload(fileName, file);
+
+            if (error) throw error;
+
+            const { data: publicUrl } = supabaseClient.storage
+              .from('foods')
+              .getPublicUrl(fileName);
+
+            this.editForm.image_url = publicUrl.publicUrl;
+            this.showMessage('✅ 图片上传成功！', 'success-msg');
+          } catch (err) {
+            this.showMessage('❌ 图片上传失败: ' + err.message, 'error-msg');
+          }
+          event.target.value = '';
+        },
+
         // ========== 订单管理 ==========
         async fetchOrders() {
           try {
@@ -956,6 +1007,10 @@
           } catch (err) {
             this.showMessage('❌ 删除失败: ' + err.message, 'error-msg');
           }
+        },
+
+        showItemDetail(item) {
+          alert(`📋 ${item.name}\n\n价格：¥${item.price.toFixed(2)}\n描述：${item.description || '无'}\n分类：${this.getCategoryName(item.category_id) || '未分类'}`);
         }
       }
     });

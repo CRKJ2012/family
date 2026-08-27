@@ -57,6 +57,9 @@
       cursor: pointer;
       font-size: 13px;
       transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
     .btn-primary {
       background: #2563eb;
@@ -80,8 +83,28 @@
       padding: 4px 12px;
       font-size: 12px;
     }
+    .btn-block {
+      width: 100%;
+      padding: 12px;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-block:active {
+      transform: scale(0.98);
+    }
+    .btn-wechat {
+      background: #07c160;
+      color: white;
+    }
+    .btn-cash {
+      background: #f59e0b;
+      color: white;
+    }
 
-    /* 美团式布局：左侧分类 + 右侧菜品 */
+    /* 主体布局 */
     .main-content {
       display: flex;
       height: calc(100vh - 120px);
@@ -152,6 +175,11 @@
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
       align-items: center;
       gap: 12px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .menu-item-row:active {
+      transform: scale(0.98);
     }
     .menu-item-row img {
       width: 70px;
@@ -255,6 +283,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      cursor: pointer;
     }
     .cart-bar .cart-count {
       background: #2563eb;
@@ -287,16 +316,8 @@
       background: #94a3b8;
       cursor: not-allowed;
     }
-    .cart-bar .clear-cart {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 12px;
-      cursor: pointer;
-      padding: 0 4px;
-    }
 
-    /* 结算弹窗 */
+    /* 弹窗通用 */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -305,18 +326,19 @@
       height: 100%;
       background: rgba(0, 0, 0, 0.5);
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
       z-index: 300;
       animation: fadeIn 0.3s;
+      padding: 20px;
     }
     .modal-content {
       background: white;
-      border-radius: 24px 24px 0 0;
+      border-radius: 24px;
       padding: 24px 20px;
       max-width: 480px;
       width: 100%;
-      max-height: 80vh;
+      max-height: 85vh;
       overflow-y: auto;
       animation: slideUp 0.3s;
     }
@@ -330,10 +352,12 @@
     }
     @keyframes slideUp {
       from {
-        transform: translateY(100%);
+        transform: translateY(50px);
+        opacity: 0;
       }
       to {
         transform: translateY(0);
+        opacity: 1;
       }
     }
     .modal-content .close-btn {
@@ -347,17 +371,56 @@
     .modal-content h3 {
       margin-bottom: 16px;
     }
-    .modal-order-item {
+
+    /* 购物车详情 */
+    .cart-detail-item {
       display: flex;
-      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
       padding: 8px 0;
       border-bottom: 1px solid #f1f5f9;
     }
-    .modal-order-item .qty-info {
-      display: flex;
-      gap: 12px;
-      align-items: center;
+    .cart-detail-item img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #e9edf2;
     }
+    .cart-detail-item .item-info {
+      flex: 1;
+    }
+    .cart-detail-item .item-info .name {
+      font-weight: 500;
+      font-size: 14px;
+    }
+    .cart-detail-item .item-info .price {
+      font-size: 13px;
+      color: #64748b;
+    }
+    .cart-detail-item .qty-control-sm {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cart-detail-item .qty-control-sm button {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid #d1d5db;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .cart-detail-item .qty-control-sm button:active {
+      transform: scale(0.9);
+    }
+    .cart-detail-item .qty-control-sm span {
+      min-width: 20px;
+      text-align: center;
+      font-weight: 600;
+    }
+
     .modal-total {
       font-size: 20px;
       font-weight: 700;
@@ -370,26 +433,38 @@
     }
     .modal-remark textarea {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border: 1px solid #d1d9e6;
       border-radius: 12px;
       resize: vertical;
       font-size: 14px;
+      min-height: 80px;
     }
-    .modal-pay-btn {
-      width: 100%;
-      padding: 14px;
-      background: #22c55e;
-      color: white;
-      border: none;
-      border-radius: 30px;
-      font-size: 18px;
-      font-weight: 700;
+
+    /* 支付方式 */
+    .payment-options {
+      display: flex;
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .payment-options .payment-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: 2px solid #d1d5db;
+      background: white;
       cursor: pointer;
-      margin-top: 12px;
+      font-weight: 600;
+      text-align: center;
+      transition: 0.2s;
     }
-    .modal-pay-btn:active {
-      transform: scale(0.98);
+    .payment-options .payment-btn.active {
+      border-color: #2563eb;
+      background: #eff6ff;
+      color: #2563eb;
+    }
+    .payment-options .payment-btn:active {
+      transform: scale(0.95);
     }
 
     /* 收款码弹窗 */
@@ -404,13 +479,14 @@
       align-items: center;
       justify-content: center;
       z-index: 400;
+      padding: 20px;
     }
     .qrcode-box {
       background: white;
       border-radius: 24px;
       padding: 30px 24px;
-      max-width: 380px;
-      width: 90%;
+      max-width: 400px;
+      width: 100%;
       text-align: center;
     }
     .qrcode-box img {
@@ -420,13 +496,43 @@
       margin: 12px 0;
       border-radius: 12px;
     }
-    .qrcode-box .close-btn {
-      margin-top: 12px;
-      padding: 8px 32px;
-      border: 1px solid #d1d5db;
+    .qrcode-box .amount {
+      font-size: 28px;
+      font-weight: 700;
+      color: #f43f5e;
+      margin: 8px 0;
+    }
+    .qrcode-box .warning-text {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 12px 0;
+      text-align: left;
+    }
+    .qrcode-box .payment-confirm {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .qrcode-box .payment-confirm button {
+      flex: 1;
+      padding: 12px;
       border-radius: 30px;
-      background: white;
+      border: none;
+      font-weight: 600;
       cursor: pointer;
+      font-size: 16px;
+    }
+    .qrcode-box .payment-confirm .btn-paid {
+      background: #22c55e;
+      color: white;
+    }
+    .qrcode-box .payment-confirm .btn-unpaid {
+      background: #ef4444;
+      color: white;
     }
 
     .badge {
@@ -486,6 +592,23 @@
       font-size: 48px;
       margin-bottom: 12px;
     }
+    .success-toast {
+      background: #dcfce7;
+      color: #166534;
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin: 12px 0;
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .order-item-card {
+      border-bottom: 1px solid #f1f5f9;
+      padding: 12px 0;
+    }
+    .order-item-card:last-child {
+      border-bottom: none;
+    }
   </style>
 </head>
 <body>
@@ -495,14 +618,13 @@
       <header>
         <div class="logo">🍽️ <span>运光点单</span></div>
         <div style="display:flex; gap:6px;">
-          <button class="btn btn-outline btn-sm" @click="fetchMenu">🔄</button>
-          <button class="btn btn-outline btn-sm" @click="showOrders = !showOrders">📋</button>
+          <button class="btn btn-outline btn-sm" @click="fetchMenu">🔄 刷新</button>
+          <button class="btn btn-outline btn-sm" @click="showOrders = !showOrders">📋 我的订单</button>
         </div>
       </header>
 
-      <!-- 主体：左侧分类 + 右侧菜品 -->
+      <!-- 主体 -->
       <div class="main-content">
-        <!-- 左侧分类 -->
         <div class="category-sidebar">
           <div class="category-item-side" :class="{active: currentCategory === ''}" @click="currentCategory = ''">
             全部
@@ -512,20 +634,19 @@
           </div>
         </div>
 
-        <!-- 右侧菜品列表 -->
         <div class="menu-list" ref="menuList">
           <div v-if="filteredMenu.length === 0" class="empty-state">
             <div class="icon">🍽️</div>
             <div>暂无菜品</div>
             <div class="text-muted">商家正在准备菜单...</div>
           </div>
-          <div v-for="item in filteredMenu" :key="item.id" class="menu-item-row">
+          <div v-for="item in filteredMenu" :key="item.id" class="menu-item-row" @click="showItemDetail(item)">
             <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" />
             <div class="menu-item-info">
               <h4>{{ item.name }}</h4>
               <div class="desc">{{ item.description || '' }}</div>
               <div class="price">¥{{ Number(item.price).toFixed(2) }}</div>
-              <div class="cart-control">
+              <div class="cart-control" @click.stop>
                 <div class="qty-control" v-if="getCartQty(item.id) > 0">
                   <button @click="changeQty(item, -1)">−</button>
                   <span class="qty-num">{{ getCartQty(item.id) }}</span>
@@ -540,59 +661,117 @@
 
       <!-- 底部购物车 -->
       <div class="cart-bar" v-if="cart.length > 0">
-        <div class="cart-info">
+        <div class="cart-info" @click="showCartDetail = true">
           <div class="cart-count">{{ totalQty }}</div>
           <div>
             <div class="cart-total">¥{{ totalPrice.toFixed(2) }}</div>
-            <div class="text-muted" style="font-size:11px;">已选 {{ totalQty }} 件</div>
+            <div class="text-muted" style="font-size:11px;">点击查看详情</div>
           </div>
-          <button class="clear-cart" @click="clearCart">🗑️</button>
         </div>
-        <button class="checkout-btn" @click="openCheckout">去结算</button>
+        <button class="checkout-btn" @click="goToCheckout">去结算</button>
       </div>
       <div class="cart-bar" v-else style="justify-content:center;">
         <span class="text-muted">🛒 购物车是空的</span>
       </div>
 
-      <!-- 结算弹窗 -->
-      <div v-if="showCheckout" class="modal-overlay" @click.self="showCheckout = false">
+      <!-- ====== 购物车详情 ====== -->
+      <div v-if="showCartDetail" class="modal-overlay" @click.self="showCartDetail = false">
         <div class="modal-content">
-          <button class="close-btn" @click="showCheckout = false">✕</button>
-          <h3>📋 确认订单</h3>
-          <div v-for="item in cart" :key="item.id" class="modal-order-item">
-            <span>{{ item.name }}</span>
-            <div class="qty-info">
-              <span>×{{ item.qty }}</span>
-              <span style="font-weight:600;">¥{{ (item.price * item.qty).toFixed(2) }}</span>
+          <button class="close-btn" @click="showCartDetail = false">✕</button>
+          <h3>🛒 购物车详情</h3>
+          <div v-if="cart.length === 0" class="text-muted text-center" style="padding:20px;">购物车是空的</div>
+          <div v-for="item in cart" :key="item.id" class="cart-detail-item">
+            <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" />
+            <div class="item-info">
+              <div class="name">{{ item.name }}</div>
+              <div class="price">¥{{ item.price.toFixed(2) }}</div>
             </div>
+            <div class="qty-control-sm">
+              <button @click="changeQty(item, -1)">−</button>
+              <span>{{ item.qty }}</span>
+              <button @click="changeQty(item, 1)">+</button>
+            </div>
+            <span style="font-weight:600; min-width:60px; text-align:right;">¥{{ (item.price * item.qty).toFixed(2) }}</span>
+          </div>
+          <div class="modal-total">合计：¥{{ totalPrice.toFixed(2) }}</div>
+          <button class="btn btn-danger btn-block" @click="clearCart" style="margin-top:8px;">🗑️ 清空购物车</button>
+        </div>
+      </div>
+
+      <!-- ====== 结算页面 ====== -->
+      <div v-if="showCheckoutPage" class="modal-overlay" @click.self="showCheckoutPage = false">
+        <div class="modal-content" style="max-height:90vh;">
+          <button class="close-btn" @click="showCheckoutPage = false">✕</button>
+          <h3>📋 确认订单</h3>
+          <div v-for="item in cart" :key="item.id" class="cart-detail-item" style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
+            <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" style="width:50px; height:50px;" />
+            <div class="item-info">
+              <div class="name">{{ item.name }}</div>
+              <div class="price">¥{{ item.price.toFixed(2) }} × {{ item.qty }}</div>
+            </div>
+            <span style="font-weight:600;">¥{{ (item.price * item.qty).toFixed(2) }}</span>
           </div>
           <div class="modal-total">合计：¥{{ totalPrice.toFixed(2) }}</div>
           <div class="modal-remark">
-            <textarea v-model="orderRemark" placeholder="备注信息（如：不要辣、少油等）" rows="3"></textarea>
+            <label style="font-weight:600; font-size:14px; display:block; margin-bottom:4px;">📝 备注</label>
+            <textarea v-model="orderRemark" placeholder="备注信息（如：不要辣、少油等）" rows="4"></textarea>
           </div>
-          <button class="modal-pay-btn" @click="submitOrder">💳 立即支付 ¥{{ totalPrice.toFixed(2) }}</button>
+          <div class="payment-options">
+            <div class="payment-btn" :class="{active: paymentMethod === 'wechat'}" @click="paymentMethod = 'wechat'">
+              💳 微信支付
+            </div>
+            <div class="payment-btn" :class="{active: paymentMethod === 'cash'}" @click="paymentMethod = 'cash'">
+              💰 现金支付
+            </div>
+          </div>
+          <button class="btn btn-success btn-block" @click="submitOrder">
+            💳 确认支付 ¥{{ totalPrice.toFixed(2) }}
+          </button>
         </div>
       </div>
 
-      <!-- 收款码弹窗 -->
+      <!-- ====== 微信支付 - 收款码弹窗 ====== -->
       <div v-if="showQR" class="qrcode-modal" @click.self="showQR = false">
         <div class="qrcode-box">
           <h3>💳 微信支付</h3>
-          <p class="text-muted">应付金额：<strong style="color:#f43f5e;">¥{{ totalPrice.toFixed(2) }}</strong></p>
+          <div class="amount">¥{{ totalPrice.toFixed(2) }}</div>
           <img :src="qrcodeUrl" alt="微信收款码" />
-          <p class="text-muted">请使用微信扫描二维码付款</p>
-          <p class="text-muted" style="font-size:12px;">付款后商家将收到订单通知</p>
-          <button class="close-btn" @click="showQR = false">关闭</button>
+          <div class="warning-text">
+            ⚠️ <strong>重要提示：</strong><br />
+            付款后请点击"已支付"，我们才会向商家发送订单信息。<br />
+            若您未付款，商家将拒绝您的订单。
+          </div>
+          <div class="payment-confirm">
+            <button class="btn-paid" @click="confirmPaid">✅ 已支付</button>
+            <button class="btn-unpaid" @click="confirmUnpaid">❌ 未支付</button>
+          </div>
         </div>
       </div>
 
-      <!-- 订单历史 -->
+      <!-- ====== 现金支付确认 ====== -->
+      <div v-if="showCashConfirm" class="modal-overlay" @click.self="showCashConfirm = false">
+        <div class="modal-content" style="max-width:400px; text-align:center;">
+          <h3>💰 现金支付</h3>
+          <div style="font-size:24px; font-weight:700; color:#f43f5e; margin:16px 0;">¥{{ totalPrice.toFixed(2) }}</div>
+          <div style="background:#fef3c7; color:#92400e; padding:12px 16px; border-radius:8px; font-size:14px; line-height:1.8; margin:12px 0; text-align:left;">
+            ⚠️ <strong>请确认已完成支付</strong><br />
+            我们才会向商家发送订单信息。<br />
+            若您未付款，商家将拒绝您的订单。
+          </div>
+          <div style="display:flex; gap:12px; margin-top:16px;">
+            <button class="btn btn-success btn-block" @click="confirmCashPaid" style="flex:1;">✅ 已支付</button>
+            <button class="btn btn-danger btn-block" @click="showCashConfirm = false" style="flex:1;">❌ 取消</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 我的订单 ====== -->
       <div v-if="showOrders" class="modal-overlay" @click.self="showOrders = false">
         <div class="modal-content">
           <button class="close-btn" @click="showOrders = false">✕</button>
           <h3>📋 我的订单</h3>
           <div v-if="myOrders.length === 0" class="text-muted text-center" style="padding:30px;">暂无订单</div>
-          <div v-for="order in myOrders" :key="order.id" style="border-bottom:1px solid #f1f5f9; padding:12px 0;">
+          <div v-for="order in myOrders" :key="order.id" class="order-item-card">
             <div style="display:flex; justify-content:space-between; font-size:12px; color:#64748b;">
               <span>#{{ order.order_no }}</span>
               <span>{{ formatTime(order.created_at) }}</span>
@@ -604,11 +783,51 @@
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <span style="font-weight:700; color:#f43f5e;">¥{{ order.total_amount.toFixed(2) }}</span>
-              <span class="badge" :class="getBadgeClass(order.status)">
-                {{ getStatusText(order.status) }}
+              <span>
+                <span class="badge" :class="getBadgeClass(order.status)">
+                  {{ getStatusText(order.status) }}
+                </span>
+                <span style="font-size:11px; color:#94a3b8; margin-left:8px;">
+                  {{ order.payment_method === 'wechat' ? '微信' : '现金' }}
+                </span>
               </span>
             </div>
           </div>
+          <div style="margin-top:12px; font-size:12px; color:#94a3b8; text-align:center; border-top:1px solid #f1f5f9; padding-top:12px;">
+            💡 订单状态会自动刷新
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 下单成功 ====== -->
+      <div v-if="showSuccess" class="modal-overlay" @click.self="showSuccess = false">
+        <div class="modal-content" style="max-width:400px; text-align:center;">
+          <div style="font-size:48px; margin:10px 0;">🎉</div>
+          <h3 style="color:#22c55e;">下单成功！</h3>
+          <div class="success-toast">
+            <p>✅ 订单已发送给商家</p>
+            <p style="margin-top:6px;">请您及时在主页右上角查看订单状态！</p>
+            <p style="margin-top:8px;">感谢您使用运光点单系统，祝您用餐愉快！</p>
+            <p style="margin-top:4px; font-weight:600;">欢迎下次光临！</p>
+          </div>
+          <button class="btn btn-primary btn-block" @click="showSuccess = false">知道了</button>
+        </div>
+      </div>
+
+      <!-- ====== 菜品详情 ====== -->
+      <div v-if="showItemDetailModal" class="modal-overlay" @click.self="showItemDetailModal = false">
+        <div class="modal-content" style="max-width:400px;">
+          <button class="close-btn" @click="showItemDetailModal = false">✕</button>
+          <img :src="detailItem.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" style="width:100%; height:200px; object-fit:cover; border-radius:12px; margin-bottom:12px;" />
+          <h3 style="font-size:20px;">{{ detailItem.name }}</h3>
+          <div style="font-size:24px; font-weight:700; color:#f43f5e; margin:8px 0;">¥{{ detailItem.price ? Number(detailItem.price).toFixed(2) : '0.00' }}</div>
+          <div style="color:#64748b; line-height:1.8;">
+            <p><strong>描述：</strong>{{ detailItem.description || '无' }}</p>
+            <p><strong>分类：</strong>{{ getCategoryName(detailItem.category_id) || '未分类' }}</p>
+          </div>
+          <button class="btn btn-primary btn-block" @click="addToCart(detailItem); showItemDetailModal = false;" style="margin-top:12px;">
+            ➕ 加入购物车
+          </button>
         </div>
       </div>
     </div>
@@ -630,12 +849,19 @@
           categories: [],
           cart: [],
           currentCategory: '',
-          showCheckout: false,
+          showCartDetail: false,
+          showCheckoutPage: false,
           showQR: false,
+          showCashConfirm: false,
           showOrders: false,
+          showSuccess: false,
+          showItemDetailModal: false,
           orderRemark: '',
+          paymentMethod: 'wechat',
           myOrders: [],
-          qrcodeUrl: ''
+          qrcodeUrl: '',
+          detailItem: {},
+          orderTimer: null
         };
       },
       computed: {
@@ -655,6 +881,17 @@
         this.fetchCategories();
         this.fetchQRCode();
         this.fetchMyOrders();
+        // 每10秒自动刷新订单状态
+        this.orderTimer = setInterval(() => {
+          if (this.showOrders) {
+            this.fetchMyOrders();
+          }
+        }, 10000);
+      },
+      beforeUnmount() {
+        if (this.orderTimer) {
+          clearInterval(this.orderTimer);
+        }
       },
       methods: {
         formatTime(time) {
@@ -683,6 +920,10 @@
             rejected: 'badge-rejected'
           };
           return map[status] || '';
+        },
+        getCategoryName(id) {
+          const cat = this.categories.find(c => c.id === id);
+          return cat ? cat.name : '';
         },
 
         async fetchMenu() {
@@ -732,7 +973,10 @@
         async fetchMyOrders() {
           try {
             const orderIds = JSON.parse(localStorage.getItem('myOrders') || '[]');
-            if (orderIds.length === 0) return;
+            if (orderIds.length === 0) {
+              this.myOrders = [];
+              return;
+            }
             const { data, error } = await supabaseClient
               .from('orders')
               .select('*')
@@ -774,17 +1018,56 @@
           if (this.cart.length === 0) return;
           if (confirm('确认清空购物车？')) {
             this.cart = [];
+            this.showCartDetail = false;
           }
         },
 
-        openCheckout() {
-          if (this.cart.length === 0) return;
-          this.showCheckout = true;
+        showItemDetail(item) {
+          this.detailItem = item;
+          this.showItemDetailModal = true;
         },
 
-        async submitOrder() {
+        goToCheckout() {
+          if (this.cart.length === 0) return;
+          this.showCheckoutPage = true;
+        },
+
+        submitOrder() {
           if (this.cart.length === 0) return;
 
+          if (this.paymentMethod === 'wechat') {
+            // 微信支付：弹出二维码（带提示）
+            this.showCheckoutPage = false;
+            this.showQR = true;
+          } else {
+            // 现金支付：弹出确认框
+            this.showCheckoutPage = false;
+            this.showCashConfirm = true;
+          }
+        },
+
+        async confirmPaid() {
+          // 微信支付 - 已支付
+          this.showQR = false;
+          await this.saveOrder();
+          this.showSuccess = true;
+        },
+
+        confirmUnpaid() {
+          // 微信支付 - 未支付：重新弹出二维码
+          this.showQR = false;
+          // 重新打开结算页
+          this.showCheckoutPage = true;
+          alert('⚠️ 请完成支付后再点击"已支付"，否则商家将拒绝您的订单！');
+        },
+
+        async confirmCashPaid() {
+          this.showCashConfirm = false;
+          await this.saveOrder();
+          this.showSuccess = true;
+        },
+
+        async saveOrder() {
           const orderData = {
             order_no: 'ORD' + Date.now(),
             merchant_id: this.merchantId,
@@ -798,6 +1081,7 @@
             total_amount: this.totalPrice,
             remark: this.orderRemark || '',
             status: 'pending',
+            payment_method: this.paymentMethod,
             created_at: new Date().toISOString()
           };
 
@@ -813,10 +1097,9 @@
             orderIds.push(data[0].id);
             localStorage.setItem('myOrders', JSON.stringify(orderIds));
 
-            this.showCheckout = false;
             this.cart = [];
             this.orderRemark = '';
-            this.showQR = true;
+            this.showCheckoutPage = false;
             this.fetchMyOrders();
           } catch (err) {
             alert('下单失败: ' + err.message);
