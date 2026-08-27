@@ -95,23 +95,13 @@
     .btn-block:active {
       transform: scale(0.98);
     }
-    .btn-wechat {
-      background: #07c160;
-      color: white;
-    }
-    .btn-cash {
-      background: #f59e0b;
-      color: white;
-    }
 
-    /* 主体布局 */
     .main-content {
       display: flex;
       height: calc(100vh - 120px);
       overflow: hidden;
     }
 
-    /* 左侧分类 */
     .category-sidebar {
       width: 80px;
       flex-shrink: 0;
@@ -149,7 +139,6 @@
       background: #eef2ff;
     }
 
-    /* 右侧菜品列表 */
     .menu-list {
       flex: 1;
       overflow-y: auto;
@@ -158,13 +147,6 @@
     }
     .menu-list::-webkit-scrollbar {
       width: 0;
-    }
-    .menu-section-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin: 8px 0 12px;
-      padding-left: 4px;
-      color: #1e293b;
     }
     .menu-item-row {
       display: flex;
@@ -213,12 +195,26 @@
       font-size: 16px;
       margin-top: 2px;
     }
+    .menu-item-info .price .from-text {
+      font-size: 12px;
+      font-weight: 400;
+      color: #94a3b8;
+    }
     .menu-item-info .cart-control {
       display: flex;
       align-items: center;
       justify-content: flex-end;
       margin-top: 4px;
       gap: 6px;
+    }
+    .menu-item-info .combo-badge {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 1px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-left: 4px;
     }
     .qty-control {
       display: flex;
@@ -262,8 +258,10 @@
     .add-btn:active {
       transform: scale(0.95);
     }
+    .add-btn.spec-btn {
+      background: #f59e0b;
+    }
 
-    /* 底部购物车 */
     .cart-bar {
       position: fixed;
       bottom: 0;
@@ -317,7 +315,6 @@
       cursor: not-allowed;
     }
 
-    /* 弹窗通用 */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -372,7 +369,6 @@
       margin-bottom: 16px;
     }
 
-    /* 购物车详情 */
     .cart-detail-item {
       display: flex;
       align-items: center;
@@ -441,7 +437,6 @@
       min-height: 80px;
     }
 
-    /* 支付方式 */
     .payment-options {
       display: flex;
       gap: 12px;
@@ -467,7 +462,6 @@
       transform: scale(0.95);
     }
 
-    /* 收款码弹窗 */
     .qrcode-modal {
       position: fixed;
       top: 0;
@@ -572,17 +566,6 @@
     .text-center {
       text-align: center;
     }
-    .mt-2 {
-      margin-top: 8px;
-    }
-    .mb-2 {
-      margin-bottom: 8px;
-    }
-    .flex-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
     .empty-state {
       text-align: center;
       padding: 60px 20px;
@@ -609,50 +592,138 @@
     .order-item-card:last-child {
       border-bottom: none;
     }
+
+    /* 规格选择弹窗 */
+    .spec-group {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 16px;
+    }
+    .spec-group:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .spec-group-title {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 8px;
+      color: #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .spec-group-title .spec-hint {
+      font-size: 12px;
+      font-weight: 400;
+      color: #94a3b8;
+    }
+    .spec-group-title .selected-count {
+      font-size: 13px;
+      color: #2563eb;
+      font-weight: 500;
+    }
+    .spec-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: 0.15s;
+      user-select: none;
+    }
+    .spec-option:active {
+      transform: scale(0.98);
+    }
+    .spec-option.selected {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+    .spec-option.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .spec-option .option-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .spec-option .option-left .checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #d1d5db;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.15s;
+      font-size: 12px;
+      color: white;
+      flex-shrink: 0;
+    }
+    .spec-option.selected .option-left .checkbox {
+      background: #2563eb;
+      border-color: #2563eb;
+    }
+    .spec-option .option-name {
+      font-size: 14px;
+    }
+    .spec-option .option-extra {
+      font-size: 13px;
+      color: #f43f5e;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
   <div id="app">
     <div class="app-container">
-      <!-- 头部 -->
       <header>
         <div class="logo">🍽️ <span>运光点单</span></div>
         <div style="display:flex; gap:6px;">
-          <button class="btn btn-outline btn-sm" @click="fetchMenu">🔄 刷新</button>
+          <button class="btn btn-outline btn-sm" @click="fetchAllData">🔄 刷新</button>
           <button class="btn btn-outline btn-sm" @click="showOrders = !showOrders">📋 我的订单</button>
         </div>
       </header>
 
-      <!-- 主体 -->
       <div class="main-content">
         <div class="category-sidebar">
-          <div class="category-item-side" :class="{active: currentCategory === ''}" @click="currentCategory = ''">
-            全部
-          </div>
-          <div class="category-item-side" v-for="cat in categories" :key="cat.id" :class="{active: currentCategory === cat.id}" @click="currentCategory = cat.id">
-            {{ cat.name }}
-          </div>
+          <div class="category-item-side" :class="{active: currentCategory === ''}" @click="currentCategory = ''">全部</div>
+          <div class="category-item-side" v-for="cat in categories" :key="cat.id" :class="{active: currentCategory === cat.id}" @click="currentCategory = cat.id">{{ cat.name }}</div>
         </div>
 
         <div class="menu-list" ref="menuList">
-          <div v-if="filteredMenu.length === 0" class="empty-state">
+          <div v-if="allItems.length === 0" class="empty-state">
             <div class="icon">🍽️</div>
             <div>暂无菜品</div>
             <div class="text-muted">商家正在准备菜单...</div>
           </div>
-          <div v-for="item in filteredMenu" :key="item.id" class="menu-item-row" @click="showItemDetail(item)">
+          <div v-for="item in filteredItems" :key="item.id" class="menu-item-row" @click="showItemDetail(item)">
             <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" />
             <div class="menu-item-info">
-              <h4>{{ item.name }}</h4>
+              <h4>
+                {{ item.name }}
+                <span v-if="item.is_combo" class="combo-badge">套餐</span>
+              </h4>
               <div class="desc">{{ item.description || '' }}</div>
-              <div class="price">¥{{ Number(item.price).toFixed(2) }}</div>
+              <div class="price">
+                <span v-if="item.is_combo">
+                  ¥{{ getComboMinPrice(item.combo_id).toFixed(2) }}<span class="from-text">起</span>
+                </span>
+                <span v-else>¥{{ Number(item.price).toFixed(2) }}</span>
+              </div>
               <div class="cart-control" @click.stop>
                 <div class="qty-control" v-if="getCartQty(item.id) > 0">
                   <button @click="changeQty(item, -1)">−</button>
                   <span class="qty-num">{{ getCartQty(item.id) }}</span>
                   <button @click="changeQty(item, 1)">+</button>
                 </div>
-                <button class="add-btn" v-else @click="addToCart(item)">加入购物车</button>
+                <button class="add-btn" :class="item.is_combo ? 'spec-btn' : ''" @click="addToCartOrShowSpec(item)">
+                  {{ item.is_combo ? '选规格' : '加入购物车' }}
+                </button>
               </div>
             </div>
           </div>
@@ -672,6 +743,47 @@
       </div>
       <div class="cart-bar" v-else style="justify-content:center;">
         <span class="text-muted">🛒 购物车是空的</span>
+      </div>
+
+      <!-- ====== 规格选择弹窗 ====== -->
+      <div v-if="showSpecModal" class="modal-overlay" @click.self="showSpecModal = false">
+        <div class="modal-content" style="max-width:480px;">
+          <button class="close-btn" @click="showSpecModal = false">✕</button>
+          <h3>{{ specCombo.name }}</h3>
+          <div style="color:#64748b; font-size:14px; margin-bottom:12px;">请选择规格（点击切换选择）</div>
+
+          <div v-for="(group, gIdx) in specCombo.spec_groups" :key="gIdx" class="spec-group">
+            <div class="spec-group-title">
+              <span>{{ group.name }}</span>
+              <span class="spec-hint">
+                已选 <span class="selected-count">{{ getSelectedCount(gIdx) }}</span> / {{ group.max_select }} 项
+                （{{ group.min_select === 0 ? '可选' : '至少选' + group.min_select + '项' }}）
+              </span>
+            </div>
+            <div v-for="(option, oIdx) in group.items" :key="oIdx"
+                 class="spec-option"
+                 :class="{
+                   selected: isSpecSelected(gIdx, oIdx),
+                   disabled: !isSpecSelected(gIdx, oIdx) && getSelectedCount(gIdx) >= group.max_select && group.max_select > 0
+                 }"
+                 @click="toggleSpecOption(gIdx, oIdx)">
+              <div class="option-left">
+                <div class="checkbox">{{ isSpecSelected(gIdx, oIdx) ? '✓' : '' }}</div>
+                <span class="option-name">{{ getMenuItemName(option.menu_item_id) }}</span>
+              </div>
+              <span class="option-extra">{{ option.extra_price > 0 ? '+¥' + option.extra_price.toFixed(2) : '不加价' }}</span>
+            </div>
+          </div>
+
+          <div style="margin-top:12px; padding-top:12px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:14px; color:#64748b;">已选 {{ totalSpecItems }} 项</span>
+            <span style="font-size:20px; font-weight:700; color:#f43f5e;">¥{{ getSpecTotalPrice().toFixed(2) }}</span>
+          </div>
+
+          <button class="btn btn-success btn-block" @click="addSpecToCart" style="margin-top:12px;">
+            ✅ 加入购物车
+          </button>
+        </div>
       </div>
 
       <!-- ====== 购物车详情 ====== -->
@@ -717,20 +829,14 @@
             <textarea v-model="orderRemark" placeholder="备注信息（如：不要辣、少油等）" rows="4"></textarea>
           </div>
           <div class="payment-options">
-            <div class="payment-btn" :class="{active: paymentMethod === 'wechat'}" @click="paymentMethod = 'wechat'">
-              💳 微信支付
-            </div>
-            <div class="payment-btn" :class="{active: paymentMethod === 'cash'}" @click="paymentMethod = 'cash'">
-              💰 现金支付
-            </div>
+            <div class="payment-btn" :class="{active: paymentMethod === 'wechat'}" @click="paymentMethod = 'wechat'">💳 微信支付</div>
+            <div class="payment-btn" :class="{active: paymentMethod === 'cash'}" @click="paymentMethod = 'cash'">💰 现金支付</div>
           </div>
-          <button class="btn btn-success btn-block" @click="submitOrder">
-            💳 确认支付 ¥{{ totalPrice.toFixed(2) }}
-          </button>
+          <button class="btn btn-success btn-block" @click="submitOrder">💳 确认支付 ¥{{ totalPrice.toFixed(2) }}</button>
         </div>
       </div>
 
-      <!-- ====== 微信支付 - 收款码弹窗 ====== -->
+      <!-- ====== 微信支付 ====== -->
       <div v-if="showQR" class="qrcode-modal" @click.self="showQR = false">
         <div class="qrcode-box">
           <h3>💳 微信支付</h3>
@@ -748,7 +854,7 @@
         </div>
       </div>
 
-      <!-- ====== 现金支付确认 ====== -->
+      <!-- ====== 现金支付 ====== -->
       <div v-if="showCashConfirm" class="modal-overlay" @click.self="showCashConfirm = false">
         <div class="modal-content" style="max-width:400px; text-align:center;">
           <h3>💰 现金支付</h3>
@@ -784,12 +890,8 @@
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <span style="font-weight:700; color:#f43f5e;">¥{{ order.total_amount.toFixed(2) }}</span>
               <span>
-                <span class="badge" :class="getBadgeClass(order.status)">
-                  {{ getStatusText(order.status) }}
-                </span>
-                <span style="font-size:11px; color:#94a3b8; margin-left:8px;">
-                  {{ order.payment_method === 'wechat' ? '微信' : '现金' }}
-                </span>
+                <span class="badge" :class="getBadgeClass(order.status)">{{ getStatusText(order.status) }}</span>
+                <span style="font-size:11px; color:#94a3b8; margin-left:8px;">{{ order.payment_method === 'wechat' ? '微信' : '现金' }}</span>
               </span>
             </div>
           </div>
@@ -820,13 +922,16 @@
           <button class="close-btn" @click="showItemDetailModal = false">✕</button>
           <img :src="detailItem.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" style="width:100%; height:200px; object-fit:cover; border-radius:12px; margin-bottom:12px;" />
           <h3 style="font-size:20px;">{{ detailItem.name }}</h3>
-          <div style="font-size:24px; font-weight:700; color:#f43f5e; margin:8px 0;">¥{{ detailItem.price ? Number(detailItem.price).toFixed(2) : '0.00' }}</div>
+          <div style="font-size:24px; font-weight:700; color:#f43f5e; margin:8px 0;">
+            <span v-if="detailItem.is_combo">¥{{ getComboMinPrice(detailItem.combo_id).toFixed(2) }}起</span>
+            <span v-else>¥{{ detailItem.price ? Number(detailItem.price).toFixed(2) : '0.00' }}</span>
+          </div>
           <div style="color:#64748b; line-height:1.8;">
             <p><strong>描述：</strong>{{ detailItem.description || '无' }}</p>
             <p><strong>分类：</strong>{{ getCategoryName(detailItem.category_id) || '未分类' }}</p>
           </div>
-          <button class="btn btn-primary btn-block" @click="addToCart(detailItem); showItemDetailModal = false;" style="margin-top:12px;">
-            ➕ 加入购物车
+          <button class="btn btn-primary btn-block" @click="addToCartOrShowSpec(detailItem); showItemDetailModal = false;" style="margin-top:12px;">
+            {{ detailItem.is_combo ? '选规格' : '➕ 加入购物车' }}
           </button>
         </div>
       </div>
@@ -846,6 +951,8 @@
         return {
           merchantId: 'merchant_001',
           menuItems: [],
+          combos: [],
+          comboSpecs: {},
           categories: [],
           cart: [],
           currentCategory: '',
@@ -856,42 +963,63 @@
           showOrders: false,
           showSuccess: false,
           showItemDetailModal: false,
+          showSpecModal: false,
           orderRemark: '',
           paymentMethod: 'wechat',
           myOrders: [],
           qrcodeUrl: '',
           detailItem: {},
+          specCombo: {},
+          specSelections: [],
           orderTimer: null
         };
       },
       computed: {
-        filteredMenu() {
-          if (!this.currentCategory) return this.menuItems;
-          return this.menuItems.filter(item => item.category_id === this.currentCategory);
+        allItems() {
+          const items = [...this.menuItems.map(item => ({ ...item, is_combo: false }))];
+          this.combos.forEach(combo => {
+            items.push({
+              id: 'combo_' + combo.id,
+              name: combo.name,
+              price: combo.base_price,
+              description: combo.description || '',
+              image_url: combo.image_url || '',
+              category_id: combo.category_id,
+              is_combo: true,
+              combo_id: combo.id,
+              base_price: combo.base_price
+            });
+          });
+          return items;
+        },
+        filteredItems() {
+          if (!this.currentCategory) return this.allItems;
+          return this.allItems.filter(item => item.category_id === this.currentCategory);
         },
         totalQty() {
           return this.cart.reduce((sum, item) => sum + item.qty, 0);
         },
         totalPrice() {
           return this.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+        },
+        totalSpecItems() {
+          let count = 0;
+          for (let sel of this.specSelections) {
+            count += sel.selected_ids ? sel.selected_ids.length : 0;
+          }
+          return count;
         }
       },
       mounted() {
-        this.fetchMenu();
-        this.fetchCategories();
+        this.fetchAllData();
         this.fetchQRCode();
         this.fetchMyOrders();
-        // 每10秒自动刷新订单状态
         this.orderTimer = setInterval(() => {
-          if (this.showOrders) {
-            this.fetchMyOrders();
-          }
+          if (this.showOrders) this.fetchMyOrders();
         }, 10000);
       },
       beforeUnmount() {
-        if (this.orderTimer) {
-          clearInterval(this.orderTimer);
-        }
+        if (this.orderTimer) clearInterval(this.orderTimer);
       },
       methods: {
         formatTime(time) {
@@ -900,99 +1028,247 @@
           return d.toLocaleString('zh-CN');
         },
         getStatusText(status) {
-          const map = {
-            pending: '待接单',
-            accepted: '已接单',
-            cooking: '制作中',
-            ready: '请取餐',
-            completed: '已完成',
-            rejected: '已拒绝'
-          };
+          const map = { pending: '待接单', accepted: '已接单', cooking: '制作中', ready: '请取餐', completed: '已完成', rejected: '已拒绝' };
           return map[status] || status;
         },
         getBadgeClass(status) {
-          const map = {
-            pending: 'badge-pending',
-            accepted: 'badge-accepted',
-            cooking: 'badge-cooking',
-            ready: 'badge-ready',
-            completed: 'badge-completed',
-            rejected: 'badge-rejected'
-          };
+          const map = { pending: 'badge-pending', accepted: 'badge-accepted', cooking: 'badge-cooking', ready: 'badge-ready', completed: 'badge-completed', rejected: 'badge-rejected' };
           return map[status] || '';
         },
         getCategoryName(id) {
           const cat = this.categories.find(c => c.id === id);
           return cat ? cat.name : '';
         },
+        getMenuItemName(id) {
+          const item = this.menuItems.find(m => m.id === id);
+          return item ? item.name : '已删除';
+        },
+
+        async fetchAllData() {
+          await Promise.all([this.fetchMenu(), this.fetchCombos(), this.fetchCategories()]);
+        },
 
         async fetchMenu() {
           try {
-            const { data, error } = await supabaseClient
-              .from('menu')
-              .select('*')
-              .eq('merchant_id', this.merchantId)
-              .order('created_at', { ascending: true });
-
+            const { data, error } = await supabaseClient.from('menu').select('*').eq('merchant_id', this.merchantId).order('created_at', { ascending: true });
             if (error) throw error;
             this.menuItems = data || [];
-          } catch (err) {
-            console.error('获取菜单失败:', err);
-          }
+          } catch (err) { console.error('获取菜单失败:', err); }
+        },
+
+        async fetchCombos() {
+          try {
+            const { data, error } = await supabaseClient.from('combo_meals').select('*').eq('merchant_id', this.merchantId).order('created_at', { ascending: true });
+            if (error) throw error;
+            this.combos = data || [];
+
+            for (let combo of this.combos) {
+              const { data: groups } = await supabaseClient.from('combo_spec_groups').select('*').eq('combo_id', combo.id).order('sort_order');
+              if (groups) {
+                for (let g of groups) {
+                  const { data: items } = await supabaseClient.from('combo_spec_items').select('*').eq('group_id', g.id);
+                  g.items = items || [];
+                }
+                this.comboSpecs[combo.id] = groups;
+              }
+            }
+          } catch (err) { console.error('获取套餐失败:', err); }
         },
 
         async fetchCategories() {
           try {
-            const { data, error } = await supabaseClient
-              .from('categories')
-              .select('*')
-              .eq('merchant_id', this.merchantId)
-              .order('sort_order', { ascending: true });
-
+            const { data, error } = await supabaseClient.from('categories').select('*').eq('merchant_id', this.merchantId).order('sort_order');
             if (error) throw error;
             this.categories = data || [];
-          } catch (err) {
-            console.error('获取分类失败:', err);
-          }
+          } catch (err) { console.error('获取分类失败:', err); }
         },
 
         async fetchQRCode() {
           try {
             const { data } = await supabaseClient.storage.from('qrcode').list('');
             if (data && data.length > 0) {
-              const { data: publicUrl } = supabaseClient.storage
-                .from('qrcode')
-                .getPublicUrl(data[0].name);
+              const { data: publicUrl } = supabaseClient.storage.from('qrcode').getPublicUrl(data[0].name);
               this.qrcodeUrl = publicUrl.publicUrl;
             }
-          } catch (err) {
-            console.error('获取收款码失败:', err);
-          }
+          } catch (err) { console.error('获取收款码失败:', err); }
         },
 
         async fetchMyOrders() {
           try {
             const orderIds = JSON.parse(localStorage.getItem('myOrders') || '[]');
-            if (orderIds.length === 0) {
-              this.myOrders = [];
-              return;
-            }
-            const { data, error } = await supabaseClient
-              .from('orders')
-              .select('*')
-              .in('id', orderIds)
-              .order('created_at', { ascending: false });
-
+            if (orderIds.length === 0) { this.myOrders = []; return; }
+            const { data, error } = await supabaseClient.from('orders').select('*').in('id', orderIds).order('created_at', { ascending: false });
             if (error) throw error;
             this.myOrders = data || [];
-          } catch (err) {
-            console.error('获取订单失败:', err);
+          } catch (err) { console.error('获取订单失败:', err); }
+        },
+
+        getComboMinPrice(comboId) {
+          const specs = this.comboSpecs[comboId] || [];
+          const combo = this.combos.find(c => c.id === comboId);
+          let minPrice = combo ? combo.base_price : 0;
+
+          for (let g of specs) {
+            let minExtra = 0;
+            for (let item of g.items) {
+              if (item.is_default) { minExtra = item.extra_price; break; }
+            }
+            if (g.items.length > 0 && minExtra === 0) {
+              minExtra = Math.min(...g.items.map(i => i.extra_price));
+            }
+            minPrice += minExtra;
           }
+          return minPrice;
         },
 
         getCartQty(id) {
           const item = this.cart.find(c => c.id === id);
           return item ? item.qty : 0;
+        },
+
+        // ===== 规格选择（多选，点击切换） =====
+        addToCartOrShowSpec(item) {
+          if (item.is_combo) {
+            const comboId = item.combo_id;
+            const combo = this.combos.find(c => c.id === comboId);
+            if (!combo) { alert('套餐不存在'); return; }
+
+            const specs = this.comboSpecs[comboId] || [];
+            const selections = specs.map(g => {
+              const defaultIds = g.items.filter(i => i.is_default).map(i => i.id);
+              const selectedIds = defaultIds.length > 0 ? defaultIds : (g.items.length > 0 ? [g.items[0].id] : []);
+              return {
+                group_id: g.id,
+                selected_ids: selectedIds
+              };
+            });
+
+            this.specCombo = { ...combo, spec_groups: specs };
+            this.specSelections = selections;
+            this.showSpecModal = true;
+          } else {
+            this.addToCart(item);
+          }
+        },
+
+        getSelectedCount(gIdx) {
+          const group = this.specCombo.spec_groups[gIdx];
+          const selection = this.specSelections.find(s => s.group_id === group.id);
+          return selection ? selection.selected_ids.length : 0;
+        },
+
+        isSpecSelected(gIdx, oIdx) {
+          const group = this.specCombo.spec_groups[gIdx];
+          const selection = this.specSelections.find(s => s.group_id === group.id);
+          if (!selection) return false;
+          const option = group.items[oIdx];
+          return selection.selected_ids.includes(option.id);
+        },
+
+        // ★★★ 核心修复：点击切换选择/取消 ★★★
+        toggleSpecOption(gIdx, oIdx) {
+          const group = this.specCombo.spec_groups[gIdx];
+          const selection = this.specSelections.find(s => s.group_id === group.id);
+          if (!selection) return;
+
+          const option = group.items[oIdx];
+          const index = selection.selected_ids.indexOf(option.id);
+
+          if (index >= 0) {
+            // ===== 已选中 → 取消选中 =====
+            // 检查是否允许取消（不能少于 min_select）
+            if (selection.selected_ids.length <= group.min_select) {
+              if (group.min_select > 0) {
+                alert('至少需要选择 ' + group.min_select + ' 项 "' + group.name + '"');
+                return;
+              }
+            }
+            // 允许取消
+            selection.selected_ids.splice(index, 1);
+          } else {
+            // ===== 未选中 → 添加选中 =====
+            // 检查是否超过 max_select
+            if (group.max_select > 0 && selection.selected_ids.length >= group.max_select) {
+              alert('最多只能选择 ' + group.max_select + ' 项 "' + group.name + '"');
+              return;
+            }
+            selection.selected_ids.push(option.id);
+          }
+        },
+
+        getSpecTotalPrice() {
+          let total = this.specCombo.base_price || 0;
+          for (let g of this.specCombo.spec_groups) {
+            const selection = this.specSelections.find(s => s.group_id === g.id);
+            if (selection) {
+              for (let id of selection.selected_ids) {
+                const item = g.items.find(i => i.id === id);
+                if (item) total += item.extra_price;
+              }
+            }
+          }
+          return total;
+        },
+
+        addSpecToCart() {
+          // 检查是否满足最少选择
+          for (let g of this.specCombo.spec_groups) {
+            const selection = this.specSelections.find(s => s.group_id === g.id);
+            const count = selection ? selection.selected_ids.length : 0;
+            if (count < g.min_select) {
+              alert('请至少选择 ' + g.min_select + ' 项 "' + g.name + '"');
+              return;
+            }
+          }
+
+          const totalPrice = this.getSpecTotalPrice();
+          const comboId = this.specCombo.id;
+
+          // 构建套餐名称
+          let specDetails = [];
+          for (let g of this.specCombo.spec_groups) {
+            const selection = this.specSelections.find(s => s.group_id === g.id);
+            if (selection) {
+              const names = [];
+              for (let id of selection.selected_ids) {
+                const item = g.items.find(i => i.id === id);
+                if (item) {
+                  const menuItem = this.menuItems.find(m => m.id === item.menu_item_id);
+                  names.push(menuItem ? menuItem.name : '已删除');
+                }
+              }
+              if (names.length > 0) {
+                specDetails.push(names.join('、'));
+              }
+            }
+          }
+
+          const itemName = this.specCombo.name + (specDetails.length > 0 ? ' (' + specDetails.join(' | ') + ')' : '');
+
+          // 检查是否已在购物车
+          const existing = this.cart.find(c =>
+            c.id === 'combo_' + comboId &&
+            c.spec === JSON.stringify(this.specSelections.map(s => ({ group_id: s.group_id, selected_ids: s.selected_ids })))
+          );
+
+          if (existing) {
+            existing.qty += 1;
+          } else {
+            this.cart.push({
+              id: 'combo_' + comboId,
+              name: itemName,
+              price: totalPrice,
+              qty: 1,
+              image_url: this.specCombo.image_url || '',
+              is_combo: true,
+              combo_id: comboId,
+              spec: JSON.stringify(this.specSelections.map(s => ({ group_id: s.group_id, selected_ids: s.selected_ids })))
+            });
+          }
+
+          this.showSpecModal = false;
+          this.specCombo = {};
+          this.specSelections = [];
         },
 
         addToCart(item) {
@@ -1034,29 +1310,23 @@
 
         submitOrder() {
           if (this.cart.length === 0) return;
-
           if (this.paymentMethod === 'wechat') {
-            // 微信支付：弹出二维码（带提示）
             this.showCheckoutPage = false;
             this.showQR = true;
           } else {
-            // 现金支付：弹出确认框
             this.showCheckoutPage = false;
             this.showCashConfirm = true;
           }
         },
 
         async confirmPaid() {
-          // 微信支付 - 已支付
           this.showQR = false;
           await this.saveOrder();
           this.showSuccess = true;
         },
 
         confirmUnpaid() {
-          // 微信支付 - 未支付：重新弹出二维码
           this.showQR = false;
-          // 重新打开结算页
           this.showCheckoutPage = true;
           alert('⚠️ 请完成支付后再点击"已支付"，否则商家将拒绝您的订单！');
         },
@@ -1076,7 +1346,8 @@
               name: item.name,
               price: item.price,
               qty: item.qty,
-              image_url: item.image_url
+              image_url: item.image_url || '',
+              is_combo: item.is_combo || false
             })),
             total_amount: this.totalPrice,
             remark: this.orderRemark || '',
@@ -1086,11 +1357,7 @@
           };
 
           try {
-            const { data, error } = await supabaseClient
-              .from('orders')
-              .insert([orderData])
-              .select();
-
+            const { data, error } = await supabaseClient.from('orders').insert([orderData]).select();
             if (error) throw error;
 
             const orderIds = JSON.parse(localStorage.getItem('myOrders') || '[]');
