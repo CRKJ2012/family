@@ -1126,7 +1126,7 @@
           return item ? item.qty : 0;
         },
 
-        // ===== 规格选择（多选，点击切换） =====
+        // ===== 规格选择 =====
         addToCartOrShowSpec(item) {
           if (item.is_combo) {
             const comboId = item.combo_id;
@@ -1165,7 +1165,7 @@
           return selection.selected_ids.includes(option.id);
         },
 
-        // ★★★ 核心修复：点击切换选择/取消 ★★★
+        // ===== 点击直接切换（不受 min_select 限制） =====
         toggleSpecOption(gIdx, oIdx) {
           const group = this.specCombo.spec_groups[gIdx];
           const selection = this.specSelections.find(s => s.group_id === group.id);
@@ -1175,18 +1175,10 @@
           const index = selection.selected_ids.indexOf(option.id);
 
           if (index >= 0) {
-            // ===== 已选中 → 取消选中 =====
-            // 检查是否允许取消（不能少于 min_select）
-            if (selection.selected_ids.length <= group.min_select) {
-              if (group.min_select > 0) {
-                alert('至少需要选择 ' + group.min_select + ' 项 "' + group.name + '"');
-                return;
-              }
-            }
-            // 允许取消
+            // 已选中 → 直接取消（不检查 min_select）
             selection.selected_ids.splice(index, 1);
           } else {
-            // ===== 未选中 → 添加选中 =====
+            // 未选中 → 添加选中
             // 检查是否超过 max_select
             if (group.max_select > 0 && selection.selected_ids.length >= group.max_select) {
               alert('最多只能选择 ' + group.max_select + ' 项 "' + group.name + '"');
@@ -1210,6 +1202,7 @@
           return total;
         },
 
+        // ===== 加入购物车时才校验 min_select =====
         addSpecToCart() {
           // 检查是否满足最少选择
           for (let g of this.specCombo.spec_groups) {
