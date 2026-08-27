@@ -50,9 +50,15 @@
       -webkit-text-fill-color: transparent;
     }
     .shop-name {
-      font-size: 12px;
+      font-size: 11px;
       color: #64748b;
-      margin-top: 2px;
+      margin-top: 1px;
+      font-weight: 400;
+      -webkit-text-fill-color: #64748b;
+    }
+    .logo-text {
+      display: flex;
+      flex-direction: column;
     }
     .btn {
       padding: 6px 16px;
@@ -642,7 +648,7 @@
       border-bottom: none;
     }
 
-    /* ===== 规格选择弹窗 ===== */
+    /* 规格选择弹窗 */
     .spec-group {
       margin-bottom: 20px;
       border-bottom: 1px solid #f1f5f9;
@@ -729,6 +735,7 @@
       font-size: 13px;
       color: #f43f5e;
       font-weight: 600;
+      flex-shrink: 0;
     }
     .spec-option .option-qty-control {
       display: flex;
@@ -764,16 +771,83 @@
     .spec-option .option-qty-control .qty-num.zero {
       color: #94a3b8;
     }
-    .spec-option .option-remove-btn {
-      background: none;
-      border: none;
-      color: #ef4444;
-      font-size: 18px;
-      cursor: pointer;
-      padding: 0 4px;
+
+    /* 外卖相关样式 */
+    .order-type-selector {
+      display: flex;
+      gap: 12px;
+      margin: 12px 0;
     }
-    .spec-option .option-remove-btn:active {
-      transform: scale(0.9);
+    .order-type-selector .type-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: 2px solid #d1d5db;
+      background: white;
+      cursor: pointer;
+      font-weight: 600;
+      text-align: center;
+      transition: 0.2s;
+    }
+    .order-type-selector .type-btn.active {
+      border-color: #2563eb;
+      background: #eff6ff;
+      color: #2563eb;
+    }
+    .order-type-selector .type-btn:active {
+      transform: scale(0.95);
+    }
+    .delivery-fields {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin: 8px 0;
+    }
+    .delivery-fields .form-group {
+      margin-bottom: 10px;
+    }
+    .delivery-fields .form-group label {
+      font-weight: 500;
+      font-size: 13px;
+      display: block;
+      margin-bottom: 3px;
+      color: #334155;
+    }
+    .delivery-fields .form-group input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #d1d9e6;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .delivery-notice {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 8px 0;
+    }
+    .fee-breakdown {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin: 8px 0;
+      font-size: 14px;
+    }
+    .fee-breakdown .fee-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+    }
+    .fee-breakdown .fee-row.total {
+      font-weight: 700;
+      color: #f43f5e;
+      font-size: 16px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 8px;
+      margin-top: 4px;
     }
   </style>
 </head>
@@ -781,7 +855,7 @@
   <div id="app">
     <div class="app-container">
       <header>
-        <div>
+        <div class="logo-text">
           <div class="logo">🍽️ <span>运光点单</span></div>
           <div class="shop-name">{{ shopName }}</div>
         </div>
@@ -853,22 +927,18 @@
         <span class="text-muted">🛒 购物车是空的</span>
       </div>
 
-      <!-- ====== 规格选择弹窗（支持数量加减） ====== -->
+      <!-- 规格选择弹窗 -->
       <div v-if="showSpecModal" class="modal-overlay" @click.self="showSpecModal = false">
         <div class="modal-content" style="max-width:480px;">
           <button class="close-btn" @click="showSpecModal = false">✕</button>
           <h3>{{ specCombo.name }}</h3>
-          <div style="color:#64748b; font-size:14px; margin-bottom:12px;">
-            <span v-if="isAnySingleSelect">💡 单选规格：点击选择/取消</span>
-            <span v-else>💡 点击选项选中，用 +/- 调整数量</span>
-          </div>
+          <div style="color:#64748b; font-size:14px; margin-bottom:12px;">点击选项选中，用 +/- 调整数量</div>
 
           <div v-for="(group, gIdx) in specCombo.spec_groups" :key="gIdx" class="spec-group">
             <div class="spec-group-title">
               <span>{{ group.name }}</span>
               <span class="spec-hint">
                 已选 <span class="selected-count">{{ getSelectedCount(gIdx) }}</span> / {{ group.max_select }} 项
-                （{{ group.min_select === 0 ? '可选' : '至少选' + group.min_select + '项' }}）
               </span>
             </div>
             <div v-for="(option, oIdx) in group.items" :key="oIdx"
@@ -929,6 +999,7 @@
         <div class="modal-content" style="max-height:90vh;">
           <button class="close-btn" @click="showCheckoutPage = false">✕</button>
           <h3>📋 确认订单</h3>
+
           <div v-for="item in cart" :key="item.id" class="cart-detail-item" style="border-bottom:1px solid #f1f5f9; padding:8px 0;">
             <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" style="width:50px; height:50px;" />
             <div class="item-info">
@@ -937,16 +1008,73 @@
             </div>
             <span style="font-weight:600;">¥{{ (item.price * item.qty).toFixed(2) }}</span>
           </div>
-          <div class="modal-total">合计：¥{{ totalPrice.toFixed(2) }}</div>
+
+          <!-- 到店/外卖选择 -->
+          <div style="margin:12px 0;">
+            <label style="font-weight:600; font-size:14px; display:block; margin-bottom:6px;">📦 配送方式</label>
+            <div class="order-type-selector">
+              <div class="type-btn" :class="{active: orderType === 'dine_in'}" @click="orderType = 'dine_in'">🏠 到店自取</div>
+              <div class="type-btn" :class="{active: orderType === 'delivery'}" @click="orderType = 'delivery'">🚚 外卖配送</div>
+            </div>
+          </div>
+
+          <!-- 外卖信息 -->
+          <div v-if="orderType === 'delivery'" class="delivery-fields">
+            <div class="form-group">
+              <label>👤 收货人姓名 *</label>
+              <input v-model="deliveryInfo.name" placeholder="请输入收货人姓名" />
+            </div>
+            <div class="form-group">
+              <label>📞 联系电话 *</label>
+              <input v-model="deliveryInfo.phone" placeholder="请输入联系电话" type="tel" />
+            </div>
+            <div class="form-group">
+              <label>📍 配送地址 *</label>
+              <input v-model="deliveryInfo.address" placeholder="请输入详细配送地址" />
+            </div>
+            <div class="delivery-notice">
+              🚚 <strong>配送说明：</strong><br />
+              1. 配送费 ¥5.00，打包费 ¥0.50/件<br />
+              2. 由商家自配送，接单后商家将告知预计送达时间<br />
+              3. 请保持电话畅通，方便骑手联系
+            </div>
+          </div>
+
+          <!-- 备注 -->
           <div class="modal-remark">
             <label style="font-weight:600; font-size:14px; display:block; margin-bottom:4px;">📝 备注</label>
-            <textarea v-model="orderRemark" placeholder="备注信息（如：不要辣、少油等）" rows="4"></textarea>
+            <textarea v-model="orderRemark" placeholder="备注信息（如：不要辣、少油等）" rows="3"></textarea>
           </div>
+
+          <!-- 费用明细 -->
+          <div class="fee-breakdown">
+            <div class="fee-row">
+              <span>小计</span>
+              <span>¥{{ totalPrice.toFixed(2) }}</span>
+            </div>
+            <div class="fee-row" v-if="orderType === 'delivery'">
+              <span>配送费</span>
+              <span>¥5.00</span>
+            </div>
+            <div class="fee-row" v-if="orderType === 'delivery'">
+              <span>打包费 (¥0.50 × {{ totalQty }}件)</span>
+              <span>¥{{ (totalQty * 0.5).toFixed(2) }}</span>
+            </div>
+            <div class="fee-row total">
+              <span>合计</span>
+              <span>¥{{ finalTotal.toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <!-- 支付方式 -->
           <div class="payment-options">
             <div class="payment-btn" :class="{active: paymentMethod === 'wechat'}" @click="paymentMethod = 'wechat'">💳 微信支付</div>
             <div class="payment-btn" :class="{active: paymentMethod === 'cash'}" @click="paymentMethod = 'cash'">💰 现金支付</div>
           </div>
-          <button class="btn btn-success btn-block" @click="submitOrder">💳 确认支付 ¥{{ totalPrice.toFixed(2) }}</button>
+
+          <button class="btn btn-success btn-block" @click="submitOrder">
+            💳 确认支付 ¥{{ finalTotal.toFixed(2) }}
+          </button>
         </div>
       </div>
 
@@ -954,7 +1082,7 @@
       <div v-if="showQR" class="qrcode-modal" @click.self="showQR = false">
         <div class="qrcode-box">
           <h3>💳 微信支付</h3>
-          <div class="amount">¥{{ totalPrice.toFixed(2) }}</div>
+          <div class="amount">¥{{ finalTotal.toFixed(2) }}</div>
           <img :src="qrcodeUrl" alt="微信收款码" />
           <div class="warning-text">
             ⚠️ <strong>重要提示：</strong><br />
@@ -972,7 +1100,7 @@
       <div v-if="showCashConfirm" class="modal-overlay" @click.self="showCashConfirm = false">
         <div class="modal-content" style="max-width:400px; text-align:center;">
           <h3>💰 现金支付</h3>
-          <div style="font-size:24px; font-weight:700; color:#f43f5e; margin:16px 0;">¥{{ totalPrice.toFixed(2) }}</div>
+          <div style="font-size:24px; font-weight:700; color:#f43f5e; margin:16px 0;">¥{{ finalTotal.toFixed(2) }}</div>
           <div style="background:#fef3c7; color:#92400e; padding:12px 16px; border-radius:8px; font-size:14px; line-height:1.8; margin:12px 0; text-align:left;">
             ⚠️ <strong>请确认已完成支付</strong><br />
             我们才会向商家发送订单信息。<br />
@@ -1005,8 +1133,14 @@
               <span style="font-weight:700; color:#f43f5e;">¥{{ order.total_amount.toFixed(2) }}</span>
               <span>
                 <span class="badge" :class="getBadgeClass(order.status)">{{ getStatusText(order.status) }}</span>
-                <span style="font-size:11px; color:#94a3b8; margin-left:8px;">{{ order.payment_method === 'wechat' ? '微信' : '现金' }}</span>
+                <span style="font-size:11px; color:#94a3b8; margin-left:8px;">
+                  {{ order.order_type === 'delivery' ? '🚚外卖' : '🏠到店' }}
+                  {{ order.payment_method === 'wechat' ? '微信' : '现金' }}
+                </span>
               </span>
+            </div>
+            <div v-if="order.estimated_time" style="font-size:12px; color:#2563eb; margin-top:4px;">
+              ⏰ 预计送达：{{ order.estimated_time }}
             </div>
           </div>
           <div style="margin-top:12px; font-size:12px; color:#94a3b8; text-align:center; border-top:1px solid #f1f5f9; padding-top:12px;">
@@ -1023,6 +1157,9 @@
           <div class="success-toast">
             <p>✅ 订单已发送给商家</p>
             <p style="margin-top:6px;">请您及时在主页右上角查看订单状态！</p>
+            <p v-if="orderType === 'delivery'" style="margin-top:6px;">
+              🚚 商家确认订单后将告知预计送达时间
+            </p>
             <p style="margin-top:8px;">感谢您使用运光点单系统，祝您用餐愉快！</p>
             <p style="margin-top:4px; font-weight:600;">欢迎下次光临！</p>
           </div>
@@ -1080,6 +1217,12 @@
           showSpecModal: false,
           orderRemark: '',
           paymentMethod: 'wechat',
+          orderType: 'dine_in',
+          deliveryInfo: {
+            name: '',
+            phone: '',
+            address: ''
+          },
           myOrders: [],
           qrcodeUrl: '',
           detailItem: {},
@@ -1087,7 +1230,8 @@
           specSelections: [],
           shopName: '杍赴云阅的小店',
           announcement: '欢迎光临！本店所有菜品均为现点现做，感谢您的支持！',
-          orderTimer: null
+          orderTimer: null,
+          refreshTimer: null
         };
       },
       computed: {
@@ -1125,9 +1269,13 @@
           }
           return count;
         },
-        isAnySingleSelect() {
-          if (!this.specCombo.spec_groups) return false;
-          return this.specCombo.spec_groups.some(g => g.max_select === 1);
+        finalTotal() {
+          let total = this.totalPrice;
+          if (this.orderType === 'delivery') {
+            total += 5; // 配送费
+            total += this.totalQty * 0.5; // 打包费 0.5元/件
+          }
+          return total;
         }
       },
       mounted() {
@@ -1135,12 +1283,18 @@
         this.fetchQRCode();
         this.fetchMyOrders();
         this.fetchShopSettings();
+        // 所有数据自动刷新（10秒）
+        this.refreshTimer = setInterval(() => {
+          this.fetchAllData();
+        }, 10000);
+        // 订单状态自动刷新
         this.orderTimer = setInterval(() => {
           if (this.showOrders) this.fetchMyOrders();
         }, 10000);
       },
       beforeUnmount() {
         if (this.orderTimer) clearInterval(this.orderTimer);
+        if (this.refreshTimer) clearInterval(this.refreshTimer);
       },
       methods: {
         formatTime(time) {
@@ -1170,7 +1324,7 @@
         },
 
         async fetchAllData() {
-          await Promise.all([this.fetchMenu(), this.fetchCombos(), this.fetchCategories()]);
+          await Promise.all([this.fetchMenu(), this.fetchCombos(), this.fetchCategories(), this.fetchShopSettings()]);
         },
 
         async fetchMenu() {
@@ -1238,7 +1392,7 @@
               .from('merchant_settings')
               .select('*')
               .eq('merchant_id', this.merchantId)
-              .single();
+              .maybeSingle();
 
             if (error && error.code !== 'PGRST116') throw error;
             if (data) {
@@ -1307,7 +1461,7 @@
             const selections = specs.map(g => {
               return {
                 group_id: g.id,
-                selected_ids: []  // 默认全部不选
+                selected_ids: []
               };
             });
 
@@ -1341,7 +1495,6 @@
           return selection.selected_ids.filter(id => id === option.id).length;
         },
 
-        // ===== 点击选项：选中/取消选中 =====
         toggleSpecOption(gIdx, oIdx) {
           const group = this.specCombo.spec_groups[gIdx];
           const selection = this.specSelections.find(s => s.group_id === group.id);
@@ -1351,11 +1504,8 @@
           const index = selection.selected_ids.indexOf(option.id);
 
           if (index >= 0) {
-            // 已选中 → 取消选中（移除所有该选项）
             selection.selected_ids = selection.selected_ids.filter(id => id !== option.id);
           } else {
-            // 未选中 → 添加选中
-            // 检查是否超过 max_select（总数量限制）
             if (group.max_select > 0 && selection.selected_ids.length >= group.max_select) {
               alert('最多只能选择 ' + group.max_select + ' 项 "' + group.name + '"');
               return;
@@ -1364,7 +1514,6 @@
           }
         },
 
-        // ===== 调整规格数量 =====
         changeSpecQty(gIdx, oIdx, delta) {
           const group = this.specCombo.spec_groups[gIdx];
           const selection = this.specSelections.find(s => s.group_id === group.id);
@@ -1376,17 +1525,14 @@
 
           if (newCount < 0) return;
 
-          // 检查是否超过 max_select（总数量限制）
           if (delta > 0 && group.max_select > 0 && selection.selected_ids.length >= group.max_select) {
             alert('最多只能选择 ' + group.max_select + ' 项 "' + group.name + '"');
             return;
           }
 
-          // 更新数量
           if (delta > 0) {
             selection.selected_ids.push(option.id);
           } else {
-            // 移除一个该选项
             const idx = selection.selected_ids.indexOf(option.id);
             if (idx !== -1) {
               selection.selected_ids.splice(idx, 1);
@@ -1409,7 +1555,6 @@
         },
 
         addSpecToCart() {
-          // 检查是否满足最少选择
           for (let g of this.specCombo.spec_groups) {
             const selection = this.specSelections.find(s => s.group_id === g.id);
             const count = selection ? selection.selected_ids.length : 0;
@@ -1442,7 +1587,6 @@
 
           const itemName = this.specCombo.name + (specDetails.length > 0 ? ' (' + specDetails.join(' | ') + ')' : '');
 
-          // 检查是否已在购物车
           const existing = this.cart.find(c =>
             c.id === 'combo_' + comboId &&
             c.spec === JSON.stringify(this.specSelections.map(s => ({ group_id: s.group_id, selected_ids: s.selected_ids })))
@@ -1506,7 +1650,22 @@
         },
 
         submitOrder() {
-          if (this.cart.length === 0) return;
+          // 外卖验证
+          if (this.orderType === 'delivery') {
+            if (!this.deliveryInfo.name.trim()) {
+              alert('请填写收货人姓名');
+              return;
+            }
+            if (!this.deliveryInfo.phone.trim()) {
+              alert('请填写联系电话');
+              return;
+            }
+            if (!this.deliveryInfo.address.trim()) {
+              alert('请填写配送地址');
+              return;
+            }
+          }
+
           if (this.paymentMethod === 'wechat') {
             this.showCheckoutPage = false;
             this.showQR = true;
@@ -1546,12 +1705,25 @@
               image_url: item.image_url || '',
               is_combo: item.is_combo || false
             })),
-            total_amount: this.totalPrice,
+            total_amount: this.finalTotal,
             remark: this.orderRemark || '',
             status: 'pending',
             payment_method: this.paymentMethod,
+            order_type: this.orderType,
             created_at: new Date().toISOString()
           };
+
+          // 外卖信息
+          if (this.orderType === 'delivery') {
+            orderData.delivery_address = this.deliveryInfo.address;
+            orderData.customer_phone = this.deliveryInfo.phone;
+            orderData.customer_name = this.deliveryInfo.name;
+            orderData.delivery_fee = 5;
+            orderData.packing_fee = this.totalQty * 0.5;
+          } else {
+            orderData.delivery_fee = 0;
+            orderData.packing_fee = 0;
+          }
 
           try {
             const { data, error } = await supabaseClient
@@ -1567,6 +1739,7 @@
 
             this.cart = [];
             this.orderRemark = '';
+            this.deliveryInfo = { name: '', phone: '', address: '' };
             this.showCheckoutPage = false;
             this.fetchMyOrders();
           } catch (err) {

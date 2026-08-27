@@ -36,6 +36,9 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
     .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       font-size: 24px;
       font-weight: 700;
     }
@@ -43,6 +46,13 @@
       background: linear-gradient(135deg, #2563eb, #7c3aed);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+    }
+    .logo .sub-text {
+      font-size: 14px;
+      font-weight: 400;
+      color: #64748b;
+      -webkit-text-fill-color: #64748b;
+      background: none;
     }
     .btn {
       padding: 8px 20px;
@@ -198,6 +208,14 @@
       background: #fef3c7;
       color: #92400e;
     }
+    .badge-dine_in {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .badge-delivery {
+      background: #fce4ec;
+      color: #b91c1c;
+    }
     .footer {
       margin-top: 40px;
       padding-top: 20px;
@@ -285,9 +303,14 @@
       flex-wrap: wrap;
       margin-bottom: 8px;
     }
-    .order-card .order-items {
-      font-size: 14px;
-      color: #475569;
+    .order-card .order-items .item-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 3px 0;
+      border-bottom: 1px dashed #f1f5f9;
+    }
+    .order-card .order-items .item-row:last-child {
+      border-bottom: none;
     }
     .order-card .order-total {
       font-weight: 700;
@@ -394,7 +417,6 @@
       gap: 4px;
       white-space: nowrap;
     }
-    /* 全屏弹窗 */
     .full-modal-overlay {
       position: fixed;
       top: 0;
@@ -456,13 +478,41 @@
       max-height: 70vh;
       overflow-y: auto;
     }
+    .order-type-badge {
+      font-size: 12px;
+      padding: 2px 10px;
+      border-radius: 12px;
+      margin-left: 8px;
+    }
+    .order-type-badge.dine_in {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .order-type-badge.delivery {
+      background: #fce4ec;
+      color: #b91c1c;
+    }
+    .delivery-info {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+      padding: 6px 10px;
+      background: #f8fafc;
+      border-radius: 8px;
+    }
+    .delivery-info strong {
+      color: #1e293b;
+    }
   </style>
 </head>
 <body>
   <div id="app">
     <div class="container">
       <header>
-        <div class="logo">🛒 <span>运光点单</span> · 商家端</div>
+        <div class="logo">
+          <span>🛒 运光点单</span>
+          <span class="sub-text">· 商家端</span>
+        </div>
         <div>
           <button class="btn btn-outline" @click="fetchAllData">🔄 刷新</button>
           <span class="badge" style="background:#eef2ff;color:#2563eb;">{{ merchantId }}</span>
@@ -500,19 +550,29 @@
               <div>
                 <strong>#{{ order.order_no }}</strong>
                 <span class="badge" :class="getBadgeClass(order.status)">{{ getStatusText(order.status) }}</span>
-                <span style="font-size:13px;color:#64748b;margin-left:12px;">💳 {{ order.payment_method === 'wechat' ? '微信' : '现金' }}</span>
+                <span class="order-type-badge" :class="order.order_type || 'dine_in'">
+                  {{ order.order_type === 'delivery' ? '🚚 外卖' : '🏠 到店' }}
+                </span>
               </div>
               <div style="font-size:13px; color:#64748b;">{{ formatTime(order.created_at) }}</div>
             </div>
             <div class="order-items">
-              <div v-for="item in order.items" :key="item.id" style="display:flex; justify-content:space-between; padding:2px 0;">
+              <div v-for="item in order.items" :key="item.id" class="item-row">
                 <span>{{ item.name }} × {{ item.qty }}</span>
                 <span>¥{{ (item.price * item.qty).toFixed(2) }}</span>
               </div>
             </div>
+            <div v-if="order.order_type === 'delivery'" class="delivery-info">
+              <div><strong>📍 地址：</strong>{{ order.delivery_address || '未填写' }}</div>
+              <div><strong>📞 电话：</strong>{{ order.customer_phone || '未填写' }}</div>
+              <div><strong>👤 联系人：</strong>{{ order.customer_name || '未填写' }}</div>
+              <div v-if="order.estimated_time"><strong>⏰ 预计送达：</strong>{{ order.estimated_time }}</div>
+            </div>
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-top:8px; border-top:1px solid #f1f5f9; padding-top:8px;">
               <div>
                 <span class="order-total">¥{{ order.total_amount.toFixed(2) }}</span>
+                <span v-if="order.delivery_fee" style="font-size:13px; color:#64748b; margin-left:8px;">(含配送费 ¥{{ order.delivery_fee.toFixed(2) }})</span>
+                <span v-if="order.packing_fee" style="font-size:13px; color:#64748b; margin-left:8px;">(打包费 ¥{{ order.packing_fee.toFixed(2) }})</span>
                 <span v-if="order.remark" style="font-size:13px; color:#64748b; margin-left:12px;">📝 {{ order.remark }}</span>
               </div>
               <div class="order-actions">
@@ -523,6 +583,14 @@
                 <button v-if="order.status === 'pending'" class="btn btn-danger btn-sm" @click="updateOrderStatus(order.id, 'rejected')">❌ 拒绝</button>
                 <button class="btn btn-danger btn-sm" @click="deleteOrder(order.id)">🗑️ 删除</button>
               </div>
+            </div>
+            <div v-if="order.status === 'accepted' && order.order_type === 'delivery'" style="margin-top:8px; padding-top:8px; border-top:1px solid #f1f5f9;">
+              <div class="flex-row">
+                <label style="font-size:13px; font-weight:600;">预计送达时间：</label>
+                <input v-model="order.estimated_time" placeholder="如：30分钟后" style="flex:1; padding:6px 12px; border:1px solid #d1d9e6; border-radius:8px; font-size:13px;" />
+                <button class="btn btn-primary btn-sm" @click="updateEstimatedTime(order)">💾 保存</button>
+              </div>
+              <div style="font-size:12px; color:#94a3b8; margin-top:4px;">💡 填写后用户将看到预计送达时间</div>
             </div>
           </div>
         </div>
@@ -560,10 +628,9 @@
           <button class="btn btn-primary" @click="addItem">✅ 添加菜品</button>
           <button class="btn btn-outline" @click="resetNewItem" style="margin-left:10px;">清空</button>
         </div>
-
         <div class="card">
           <h3>📋 菜品列表 ({{ menuItems.length }})</h3>
-          <div v-if="menuItems.length === 0" class="text-muted" style="padding:30px; text-align:center;">暂无菜品，请点击"添加菜品"添加</div>
+          <div v-if="menuItems.length === 0" class="text-muted" style="padding:30px; text-align:center;">暂无菜品</div>
           <div class="menu-grid">
             <div class="menu-item-card" v-for="item in menuItems" :key="item.id">
               <img :src="item.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍽️'" alt="菜品" />
@@ -611,10 +678,9 @@
           </div>
           <button class="btn btn-primary" @click="addCombo">✅ 添加套餐</button>
         </div>
-
         <div class="card">
           <h3>📋 套餐列表 ({{ combos.length }})</h3>
-          <div v-if="combos.length === 0" class="text-muted" style="padding:30px; text-align:center;">暂无套餐，请添加</div>
+          <div v-if="combos.length === 0" class="text-muted" style="padding:30px; text-align:center;">暂无套餐</div>
           <div class="menu-grid">
             <div class="combo-card" v-for="combo in combos" :key="combo.id">
               <img :src="combo.image_url || 'https://placehold.co/300x200/e9edf2/64748b?text=🍱'" alt="套餐" />
@@ -665,7 +731,6 @@
           </div>
           <button class="btn btn-primary" @click="saveShopSettings">💾 保存设置</button>
         </div>
-
         <div class="card">
           <h3 style="margin-bottom:14px;">📱 微信收款码</h3>
           <div class="flex-row">
@@ -753,10 +818,8 @@
               </div>
             </div>
           </div>
-
           <h4 style="margin-top:16px; margin-bottom:12px;">📦 规格组配置</h4>
           <p style="font-size:13px; color:#64748b; margin-bottom:12px;">像美团一样，每个规格组包含多个选项，顾客可选择（可重复选）</p>
-
           <div v-for="(group, gIdx) in editingCombo.spec_groups" :key="gIdx" class="spec-group-card">
             <div class="flex-row" style="margin-bottom:8px;">
               <input v-model="group.name" placeholder="规格名称（如：主食选择）" style="flex:1; padding:8px 12px; border:1px solid #d1d9e6; border-radius:8px; min-width:120px;" />
@@ -764,7 +827,6 @@
               <label style="font-size:13px; white-space:nowrap;">最多选 <input v-model.number="group.max_select" type="number" min="0" style="width:50px; padding:4px 6px; border:1px solid #d1d9e6; border-radius:6px;" /></label>
               <button class="btn btn-danger btn-sm" @click="removeSpecGroup(gIdx)">✕ 删除</button>
             </div>
-
             <div style="font-size:13px; font-weight:600; color:#475569; margin-bottom:4px;">选项列表（从现有菜品中选择）</div>
             <div v-for="(item, iIdx) in group.items" :key="iIdx" class="spec-item-row">
               <select v-model="item.menu_item_id" style="flex:2; min-width:150px; padding:6px 10px; border:1px solid #d1d9e6; border-radius:8px;">
@@ -779,7 +841,6 @@
             </div>
             <button class="btn btn-outline btn-sm" @click="addSpecItem(gIdx)" style="margin-top:6px;">➕ 添加选项</button>
           </div>
-
           <div style="display:flex; gap:12px; margin-top:12px; flex-wrap:wrap;">
             <button class="btn btn-outline" @click="addSpecGroup">➕ 添加规格组</button>
             <button class="btn btn-primary" @click="saveComboSpecs">💾 保存套餐</button>
@@ -802,7 +863,7 @@
       data() {
         return {
           merchantId: 'merchant_001',
-          currentTab: 'menu',
+          currentTab: 'orders',
           statusFilter: '',
           menuItems: [],
           categories: [],
@@ -810,18 +871,16 @@
           orders: [],
           qrcodeUrl: '',
           shopSettings: { shop_name: '杍赴云阅的小店', shop_announcement: '欢迎光临！本店所有菜品均为现点现做，感谢您的支持！' },
-          // 菜品
           newItem: { name: '', price: 0, description: '', image_url: '', category_id: '' },
           editItemModalVisible: false,
           editForm: { id: null, name: '', price: 0, description: '', image_url: '', category_id: '' },
-          // 分类
           newCategoryName: '',
-          // 套餐
           newCombo: { name: '', description: '', image_url: '', category_id: '' },
           editComboModalVisible: false,
           editingCombo: null,
           message: '',
-          messageType: 'success-msg'
+          messageType: 'success-msg',
+          refreshTimer: null
         };
       },
       computed: {
@@ -834,7 +893,14 @@
         this.fetchAllData();
         this.fetchQRCode();
         this.fetchShopSettings();
-        setInterval(() => { this.fetchOrders(); }, 15000);
+        this.refreshTimer = setInterval(() => {
+          this.fetchAllData();
+        }, 10000);
+      },
+      beforeUnmount() {
+        if (this.refreshTimer) {
+          clearInterval(this.refreshTimer);
+        }
       },
       methods: {
         showMessage(text, type = 'success-msg') {
@@ -862,12 +928,15 @@
         getCategoryItemCount(categoryId) {
           return this.menuItems.filter(item => item.category_id === categoryId).length;
         },
-
         async fetchAllData() {
-          await Promise.all([this.fetchMenu(), this.fetchCategories(), this.fetchOrders(), this.fetchCombos()]);
+          await Promise.all([
+            this.fetchMenu(),
+            this.fetchCategories(),
+            this.fetchOrders(),
+            this.fetchCombos(),
+            this.fetchShopSettings()
+          ]);
         },
-
-        // ===== 菜品 =====
         async fetchMenu() {
           try {
             const { data, error } = await supabaseClient
@@ -875,16 +944,10 @@
               .select('*')
               .eq('merchant_id', this.merchantId)
               .order('created_at', { ascending: false });
-
             if (error) throw error;
             this.menuItems = data || [];
-            console.log('菜品加载成功:', this.menuItems.length);
-          } catch (err) {
-            console.error('获取菜单失败:', err);
-            this.showMessage('❌ 获取菜单失败: ' + err.message, 'error-msg');
-          }
+          } catch (err) { console.error('获取菜单失败:', err); }
         },
-
         async addItem() {
           const { name, price } = this.newItem;
           if (!name || price <= 0) {
@@ -894,12 +957,8 @@
           try {
             const { data, error } = await supabaseClient
               .from('menu')
-              .insert([{
-                ...this.newItem,
-                merchant_id: this.merchantId
-              }])
+              .insert([{ ...this.newItem, merchant_id: this.merchantId }])
               .select();
-
             if (error) throw error;
             this.menuItems.unshift(data[0]);
             this.newItem = { name: '', price: 0, description: '', image_url: '', category_id: '' };
@@ -908,7 +967,6 @@
             this.showMessage('❌ 添加失败: ' + err.message, 'error-msg');
           }
         },
-
         async deleteItem(id) {
           if (!confirm('确认删除？')) return;
           try {
@@ -919,16 +977,13 @@
             this.showMessage('❌ 删除失败: ' + err.message, 'error-msg');
           }
         },
-
         resetNewItem() {
           this.newItem = { name: '', price: 0, description: '', image_url: '', category_id: '' };
         },
-
         openEditItemModal(item) {
           this.editForm = { ...item };
           this.editItemModalVisible = true;
         },
-
         async saveEditItem() {
           const { id, name, price } = this.editForm;
           if (!name || price <= 0) {
@@ -946,7 +1001,6 @@
                 category_id: this.editForm.category_id || null
               })
               .eq('id', id);
-
             const index = this.menuItems.findIndex(i => i.id === id);
             if (index !== -1) this.menuItems[index] = { ...this.editForm };
             this.editItemModalVisible = false;
@@ -955,7 +1009,6 @@
             this.showMessage('❌ 更新失败: ' + err.message, 'error-msg');
           }
         },
-
         async uploadFoodImage(event) {
           const file = event.target.files[0];
           if (!file) return;
@@ -965,8 +1018,7 @@
           }
           try {
             const fileName = `food_${Date.now()}.${file.name.split('.').pop()}`;
-            const { error } = await supabaseClient.storage.from('foods').upload(fileName, file);
-            if (error) throw error;
+            await supabaseClient.storage.from('foods').upload(fileName, file);
             const { data: publicUrl } = supabaseClient.storage.from('foods').getPublicUrl(fileName);
             this.newItem.image_url = publicUrl.publicUrl;
             this.showMessage('✅ 图片上传成功');
@@ -975,7 +1027,6 @@
           }
           event.target.value = '';
         },
-
         async uploadEditFoodImage(event) {
           const file = event.target.files[0];
           if (!file) return;
@@ -990,8 +1041,6 @@
           }
           event.target.value = '';
         },
-
-        // ===== 分类 =====
         async fetchCategories() {
           try {
             const { data, error } = await supabaseClient
@@ -999,12 +1048,10 @@
               .select('*')
               .eq('merchant_id', this.merchantId)
               .order('sort_order');
-
             if (error) throw error;
             this.categories = data || [];
           } catch (err) { console.error(err); }
         },
-
         async addCategory() {
           if (!this.newCategoryName.trim()) {
             this.showMessage('请输入分类名称', 'error-msg');
@@ -1019,7 +1066,6 @@
                 sort_order: this.categories.length + 1
               }])
               .select();
-
             if (error) throw error;
             this.categories.push(data[0]);
             this.newCategoryName = '';
@@ -1028,7 +1074,6 @@
             this.showMessage('❌ 添加失败: ' + err.message, 'error-msg');
           }
         },
-
         async deleteCategory(id) {
           if (!confirm('确认删除？')) return;
           try {
@@ -1041,8 +1086,6 @@
             this.showMessage('❌ 删除失败: ' + err.message, 'error-msg');
           }
         },
-
-        // ===== 套餐 =====
         async fetchCombos() {
           try {
             const { data, error } = await supabaseClient
@@ -1050,12 +1093,10 @@
               .select('*')
               .eq('merchant_id', this.merchantId)
               .order('created_at', { ascending: false });
-
             if (error) throw error;
             this.combos = data || [];
           } catch (err) { console.error(err); }
         },
-
         async addCombo() {
           if (!this.newCombo.name) {
             this.showMessage('请填写套餐名称', 'error-msg');
@@ -1064,13 +1105,8 @@
           try {
             const { data, error } = await supabaseClient
               .from('combo_meals')
-              .insert([{
-                ...this.newCombo,
-                merchant_id: this.merchantId,
-                base_price: 0
-              }])
+              .insert([{ ...this.newCombo, merchant_id: this.merchantId, base_price: 0 }])
               .select();
-
             if (error) throw error;
             this.combos.unshift(data[0]);
             this.newCombo = { name: '', description: '', image_url: '', category_id: '' };
@@ -1079,7 +1115,6 @@
             this.showMessage('❌ 添加失败: ' + err.message, 'error-msg');
           }
         },
-
         async deleteCombo(id) {
           if (!confirm('确认删除此套餐？')) return;
           try {
@@ -1090,7 +1125,6 @@
             this.showMessage('❌ 删除失败: ' + err.message, 'error-msg');
           }
         },
-
         async uploadComboImage(event) {
           const file = event.target.files[0];
           if (!file) return;
@@ -1105,7 +1139,6 @@
           }
           event.target.value = '';
         },
-
         async openEditComboModal(combo) {
           try {
             const { data: groups, error: gErr } = await supabaseClient
@@ -1113,21 +1146,16 @@
               .select('*')
               .eq('combo_id', combo.id)
               .order('sort_order');
-
             if (gErr) throw gErr;
-
             for (let g of groups) {
               const { data: items, error: iErr } = await supabaseClient
                 .from('combo_spec_items')
                 .select('*')
                 .eq('group_id', g.id);
-
               if (iErr) throw iErr;
               g.items = items || [];
             }
-
             this.editingCombo = { ...combo, spec_groups: groups || [] };
-
             if (this.editingCombo.spec_groups.length === 0) {
               this.editingCombo.spec_groups.push({
                 name: '选择',
@@ -1141,7 +1169,6 @@
             this.showMessage('❌ 加载规格失败: ' + err.message, 'error-msg');
           }
         },
-
         addSpecGroup() {
           if (!this.editingCombo) return;
           this.editingCombo.spec_groups.push({
@@ -1151,7 +1178,6 @@
             items: [{ menu_item_id: '', extra_price: 0, is_default: false }]
           });
         },
-
         removeSpecGroup(idx) {
           if (this.editingCombo.spec_groups.length <= 1) {
             this.showMessage('至少保留一个规格组', 'error-msg');
@@ -1159,11 +1185,9 @@
           }
           this.editingCombo.spec_groups.splice(idx, 1);
         },
-
         addSpecItem(gIdx) {
           this.editingCombo.spec_groups[gIdx].items.push({ menu_item_id: '', extra_price: 0, is_default: false });
         },
-
         removeSpecItem(gIdx, iIdx) {
           const items = this.editingCombo.spec_groups[gIdx].items;
           if (items.length <= 1) {
@@ -1172,47 +1196,37 @@
           }
           items.splice(iIdx, 1);
         },
-
-        // ===== ★★★ 核心修复：自动计算基础价格 ★★★ =====
         async saveComboSpecs() {
           if (!this.editingCombo) return;
-
           try {
-            // ===== 计算基础价格 =====
-            // 规则：每个规格组中，找 extra_price = 0 的菜品，取其原价 × min_select
             let basePrice = 0;
-
             for (let g of this.editingCombo.spec_groups) {
-              // 找该规格组中 extra_price = 0 的选项
               const zeroExtraItems = g.items.filter(item => item.extra_price === 0 && item.menu_item_id);
-
               if (zeroExtraItems.length > 0) {
-                // 取第一个加价为0的菜品
-                const firstItem = zeroExtraItems[0];
-                // 从菜单中查找原价
-                const menuItem = this.menuItems.find(m => m.id === firstItem.menu_item_id);
-                if (menuItem) {
-                  basePrice += menuItem.price * (g.min_select || 1);
+                let minPrice = Infinity;
+                for (let item of zeroExtraItems) {
+                  const menuItem = this.menuItems.find(m => m.id === item.menu_item_id);
+                  if (menuItem && menuItem.price < minPrice) {
+                    minPrice = menuItem.price;
+                  }
+                }
+                if (minPrice !== Infinity) {
+                  basePrice += minPrice * (g.min_select || 1);
                 }
               } else {
-                // 如果没有加价为0的选项，取该组中价格最低的菜品
                 let minPrice = Infinity;
-                let minMenuItem = null;
                 for (let item of g.items) {
                   if (!item.menu_item_id) continue;
                   const menuItem = this.menuItems.find(m => m.id === item.menu_item_id);
                   if (menuItem && menuItem.price < minPrice) {
                     minPrice = menuItem.price;
-                    minMenuItem = menuItem;
                   }
                 }
-                if (minMenuItem) {
-                  basePrice += minMenuItem.price * (g.min_select || 1);
+                if (minPrice !== Infinity) {
+                  basePrice += minPrice * (g.min_select || 1);
                 }
               }
             }
-
-            // 更新套餐基本信息 + 自动计算的价格
             await supabaseClient
               .from('combo_meals')
               .update({
@@ -1223,27 +1237,21 @@
                 category_id: this.editingCombo.category_id || null
               })
               .eq('id', this.editingCombo.id);
-
-            // 删除旧的规格
             const { data: oldGroups } = await supabaseClient
               .from('combo_spec_groups')
               .select('id')
               .eq('combo_id', this.editingCombo.id);
-
             if (oldGroups && oldGroups.length > 0) {
               for (let g of oldGroups) {
                 await supabaseClient.from('combo_spec_items').delete().eq('group_id', g.id);
               }
               await supabaseClient.from('combo_spec_groups').delete().eq('combo_id', this.editingCombo.id);
             }
-
-            // 插入新规格
             for (let g of this.editingCombo.spec_groups) {
               if (!g.name.trim()) {
                 this.showMessage('请填写规格名称', 'error-msg');
                 return;
               }
-
               const { data: groupData, error: gErr } = await supabaseClient
                 .from('combo_spec_groups')
                 .insert([{
@@ -1254,9 +1262,7 @@
                   sort_order: 0
                 }])
                 .select();
-
               if (gErr) throw gErr;
-
               if (groupData && groupData.length > 0) {
                 let hasValidItem = false;
                 for (let item of g.items) {
@@ -1279,13 +1285,10 @@
                 }
               }
             }
-
-            // 更新本地数据
             const comboIndex = this.combos.findIndex(c => c.id === this.editingCombo.id);
             if (comboIndex !== -1) {
               this.combos[comboIndex] = { ...this.editingCombo, base_price: basePrice };
             }
-
             this.editComboModalVisible = false;
             this.showMessage('✅ 套餐规格保存成功，基础价格：¥' + basePrice.toFixed(2));
             await this.fetchCombos();
@@ -1293,7 +1296,6 @@
             this.showMessage('❌ 保存失败: ' + err.message, 'error-msg');
           }
         },
-
         async uploadEditComboImage(event) {
           const file = event.target.files[0];
           if (!file) return;
@@ -1308,8 +1310,6 @@
           }
           event.target.value = '';
         },
-
-        // ===== 订单 =====
         async fetchOrders() {
           try {
             const { data, error } = await supabaseClient
@@ -1317,19 +1317,16 @@
               .select('*')
               .eq('merchant_id', this.merchantId)
               .order('created_at', { ascending: false });
-
             if (error) throw error;
             this.orders = data || [];
           } catch (err) { console.error(err); }
         },
-
         async updateOrderStatus(id, status) {
           try {
             await supabaseClient
               .from('orders')
               .update({ status, updated_at: new Date().toISOString() })
               .eq('id', id);
-
             const order = this.orders.find(o => o.id === id);
             if (order) order.status = status;
             this.showMessage('✅ 状态已更新');
@@ -1337,7 +1334,17 @@
             this.showMessage('❌ 更新失败: ' + err.message, 'error-msg');
           }
         },
-
+        async updateEstimatedTime(order) {
+          try {
+            await supabaseClient
+              .from('orders')
+              .update({ estimated_time: order.estimated_time })
+              .eq('id', order.id);
+            this.showMessage('✅ 预计送达时间已更新');
+          } catch (err) {
+            this.showMessage('❌ 更新失败: ' + err.message, 'error-msg');
+          }
+        },
         async deleteOrder(id) {
           if (!confirm('确认删除订单？')) return;
           try {
@@ -1348,42 +1355,61 @@
             this.showMessage('❌ 删除失败: ' + err.message, 'error-msg');
           }
         },
-
-        // ===== 店铺设置 =====
         async fetchShopSettings() {
           try {
             const { data, error } = await supabaseClient
               .from('merchant_settings')
               .select('*')
               .eq('merchant_id', this.merchantId)
-              .single();
+              .maybeSingle();
 
             if (error && error.code !== 'PGRST116') throw error;
             if (data) {
-              this.shopSettings = data;
+              this.shopSettings = {
+                shop_name: data.shop_name || '杍赴云阅的小店',
+                shop_announcement: data.shop_announcement || '欢迎光临！本店所有菜品均为现点现做，感谢您的支持！'
+              };
             }
           } catch (err) { console.error('获取店铺设置失败:', err); }
         },
-
         async saveShopSettings() {
           try {
-            const { error } = await supabaseClient
+            const { data: existing } = await supabaseClient
               .from('merchant_settings')
-              .upsert({
-                merchant_id: this.merchantId,
-                shop_name: this.shopSettings.shop_name,
-                shop_announcement: this.shopSettings.shop_announcement,
-                updated_at: new Date().toISOString()
-              });
+              .select('*')
+              .eq('merchant_id', this.merchantId)
+              .maybeSingle();
 
-            if (error) throw error;
+            let result;
+            if (existing) {
+              result = await supabaseClient
+                .from('merchant_settings')
+                .update({
+                  shop_name: this.shopSettings.shop_name,
+                  shop_announcement: this.shopSettings.shop_announcement,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('merchant_id', this.merchantId);
+            } else {
+              result = await supabaseClient
+                .from('merchant_settings')
+                .insert({
+                  merchant_id: this.merchantId,
+                  shop_name: this.shopSettings.shop_name,
+                  shop_announcement: this.shopSettings.shop_announcement,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString()
+                });
+            }
+
+            if (result.error) throw result.error;
             this.showMessage('✅ 店铺设置已保存', 'success-msg');
+            await this.fetchShopSettings();
           } catch (err) {
+            console.error('保存失败:', err);
             this.showMessage('❌ 保存失败: ' + err.message, 'error-msg');
           }
         },
-
-        // ===== 收款码 =====
         async fetchQRCode() {
           try {
             const { data } = await supabaseClient.storage.from('qrcode').list('');
@@ -1393,7 +1419,6 @@
             }
           } catch (err) { console.error(err); }
         },
-
         async uploadQRCode(event) {
           const file = event.target.files[0];
           if (!file) return;
@@ -1414,7 +1439,6 @@
           }
           event.target.value = '';
         },
-
         async deleteQRCode() {
           if (!confirm('确认删除？')) return;
           try {
