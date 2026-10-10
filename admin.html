@@ -19,8 +19,10 @@
   .card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
   .card h2 { font-size: 18px; margin-bottom: 16px; }
   input, textarea, select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; }
+  label { font-size: 14px; color: #666; display: block; margin-bottom: 6px; }
   .btn { padding: 12px 24px; background: #1d1d1f; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
   .btn:hover { background: #333; }
+  .btn:disabled { background: #999; cursor: not-allowed; }
   .btn-red { background: #ff3b30; }
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
   th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
@@ -36,13 +38,19 @@
   .msg { padding: 12px; border-radius: 8px; margin-bottom: 12px; display: none; }
   .msg.ok { background: #d4edda; color: #155724; display: block; }
   .msg.err { background: #f8d7da; color: #721c24; display: block; }
-  .progress { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-top: 8px; display: none; }
-  .progress div { height: 100%; background: #1d1d1f; width: 0%; transition: width 0.3s; }
+  .progress { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin: 6px 0 14px; display: none; position: relative; }
+  .progress div { height: 100%; background: #1d1d1f; width: 0%; transition: width 0.2s; }
+  .progress-text { font-size: 12px; color: #666; text-align: right; margin-top: -10px; margin-bottom: 10px; display: none; }
+  .file-list { font-size: 13px; color: #666; margin-bottom: 10px; }
+  .file-list div { padding: 4px 0; }
+  .preview { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .preview img { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
+  .status-pending { color: #ff9500; font-weight: 600; }
+  .status-approved { color: #34c759; font-weight: 600; }
 </style>
 </head>
 <body>
 
-<!-- 登录页 -->
 <div id="loginView">
   <div class="login-box">
     <h2>🔐 管理员登录</h2>
@@ -53,7 +61,6 @@
   </div>
 </div>
 
-<!-- 后台主页 -->
 <div id="adminView" style="display:none">
   <header>
     <h1>🏍️ 机车租赁平台 - 后台</h1>
@@ -66,7 +73,6 @@
       <button onclick="switchTab('tab-bookings', this)">租赁申请</button>
     </div>
 
-    <!-- 添加车辆 -->
     <div class="panel active" id="tab-add">
       <div class="card">
         <h2>添加新车辆</h2>
@@ -74,17 +80,24 @@
         <input id="mName" placeholder="机车名称 *">
         <input id="mPrice" type="number" placeholder="日租金（元）*">
         <textarea id="mDesc" placeholder="文字介绍" rows="3"></textarea>
-        <label style="font-size:14px;color:#666">主图：</label>
-        <input id="mImage" type="file" accept="image/*">
+
+        <label>主图（可多选，第一张为封面）*</label>
+        <input id="mImages" type="file" accept="image/*" multiple>
+        <div class="file-list" id="imgList"></div>
+        <div class="preview" id="imgPreview"></div>
         <div class="progress" id="imgProgress"><div></div></div>
-        <label style="font-size:14px;color:#666">视频（可选）：</label>
+        <div class="progress-text" id="imgProgressText"></div>
+
+        <label>视频（可选，1个）</label>
         <input id="mVideo" type="file" accept="video/*">
+        <div class="file-list" id="vidList"></div>
         <div class="progress" id="vidProgress"><div></div></div>
-        <button class="btn" style="width:100%;margin-top:12px" onclick="addMotorcycle()">保存车辆</button>
+        <div class="progress-text" id="vidProgressText"></div>
+
+        <button class="btn" style="width:100%;margin-top:12px" id="addBtn" onclick="addMotorcycle()">保存车辆</button>
       </div>
     </div>
 
-    <!-- 车辆管理 -->
     <div class="panel" id="tab-list">
       <div class="card">
         <h2>已有车辆</h2>
@@ -92,7 +105,6 @@
       </div>
     </div>
 
-    <!-- 租赁申请 -->
     <div class="panel" id="tab-bookings">
       <div class="card">
         <h2>客户租赁申请</h2>
@@ -110,28 +122,20 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// 登录时把 YCL 转成 YCL@local.com
-function toEmail(u) {
-  return u.includes('@') ? u : u + '@local.com';
-}
+function toEmail(u) { return u.includes('@') ? u : u + '@local.com'; }
 
 window.doLogin = async function() {
   const user = document.getElementById('loginUser').value.trim();
   const pass = document.getElementById('loginPass').value;
   const msg = document.getElementById('loginMsg');
-
   if (!user || !pass) { msg.className='msg err'; msg.textContent='请输入账号和密码'; return; }
 
   const { error } = await supabase.auth.signInWithPassword({ email: toEmail(user), password: pass });
-
   if (error) { msg.className='msg err'; msg.textContent='登录失败：'+error.message; }
   else { msg.className='msg ok'; msg.textContent='登录成功'; setTimeout(showAdmin, 500); }
 };
 
-window.doLogout = async function() {
-  await supabase.auth.signOut();
-  location.reload();
-};
+window.doLogout = async function() { await supabase.auth.signOut(); location.reload(); };
 
 async function checkSession() {
   const { data } = await supabase.auth.getSession();
@@ -154,54 +158,130 @@ window.switchTab = function(id, btn) {
   if (id === 'tab-bookings') loadBookings();
 };
 
-// ========== 上传文件 ==========
-async function uploadFile(file, bucket, progressEl) {
-  const ext = file.name.split('.').pop();
-  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  progressEl.style.display = 'block';
-  const bar = progressEl.querySelector('div');
-  bar.style.width = '30%';
+// ========== 文件预览 ==========
+document.getElementById('mImages').addEventListener('change', function(e) {
+  const files = Array.from(e.target.files);
+  document.getElementById('imgList').innerHTML = files.map(f => `<div>📷 ${f.name} (${(f.size/1024/1024).toFixed(2)} MB)</div>`).join('');
+  const preview = document.getElementById('imgPreview');
+  preview.innerHTML = '';
+  files.forEach(f => {
+    const url = URL.createObjectURL(f);
+    preview.innerHTML += `<img src="${url}">`;
+  });
+});
 
-  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
-  bar.style.width = '100%';
+document.getElementById('mVideo').addEventListener('change', function(e) {
+  const f = e.target.files[0];
+  document.getElementById('vidList').innerHTML = f ? `<div>🎬 ${f.name} (${(f.size/1024/1024).toFixed(2)} MB)</div>` : '';
+});
 
-  if (error) throw error;
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-  return data.publicUrl;
+// ========== 上传（带真实百分比进度） ==========
+function uploadFile(file, bucket, progressEl, textEl) {
+  return new Promise((resolve, reject) => {
+    const ext = file.name.split('.').pop();
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const url = `${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`;
+
+    progressEl.style.display = 'block';
+    textEl.style.display = 'block';
+    const bar = progressEl.querySelector('div');
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Authorization', `Bearer ${SUPABASE_ANON_KEY}`);
+    xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
+    xhr.setRequestHeader('x-upsert', 'false');
+
+    xhr.upload.onprogress = function(e) {
+      if (e.lengthComputable) {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        bar.style.width = percent + '%';
+        textEl.textContent = `上传中 ${percent}%`;
+      }
+    };
+
+    xhr.onload = function() {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        bar.style.width = '100%';
+        textEl.textContent = '✅ 上传完成';
+        const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+        resolve(data.publicUrl);
+      } else {
+        reject(new Error('上传失败：' + xhr.responseText));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('网络错误'));
+
+    const formData = new FormData();
+    formData.append('file', file);
+    xhr.send(formData);
+  });
 }
 
 // ========== 添加车辆 ==========
 window.addMotorcycle = async function() {
   const msg = document.getElementById('addMsg');
+  const btn = document.getElementById('addBtn');
   const name = document.getElementById('mName').value.trim();
   const price = document.getElementById('mPrice').value;
   const desc = document.getElementById('mDesc').value.trim();
-  const imgFile = document.getElementById('mImage').files[0];
+  const imgFiles = Array.from(document.getElementById('mImages').files);
   const vidFile = document.getElementById('mVideo').files[0];
 
   if (!name || !price) { msg.className='msg err'; msg.textContent='名称和价格必填'; return; }
+  if (imgFiles.length === 0) { msg.className='msg err'; msg.textContent='至少上传一张主图'; return; }
+
+  btn.disabled = true;
+  btn.textContent = '上传中...';
+  msg.className = 'msg ok'; msg.textContent = '正在上传，请勿关闭页面...';
 
   try {
-    msg.className = 'msg ok'; msg.textContent = '正在上传...';
+    // 上传所有图片
+    const image_urls = [];
+    for (let i = 0; i < imgFiles.length; i++) {
+      document.getElementById('imgProgressText').textContent = `第 ${i+1}/${imgFiles.length} 张`;
+      const url = await uploadFile(imgFiles[i], 'motorcycle-images',
+        document.getElementById('imgProgress'), document.getElementById('imgProgressText'));
+      image_urls.push(url);
+    }
 
-    let image_url = null, video_url = null;
-    if (imgFile) image_url = await uploadFile(imgFile, 'motorcycle-images', document.getElementById('imgProgress'));
-    if (vidFile) video_url = await uploadFile(vidFile, 'motorcycle-videos', document.getElementById('vidProgress'));
+    // 上传视频
+    let video_url = null;
+    if (vidFile) {
+      video_url = await uploadFile(vidFile, 'motorcycle-videos',
+        document.getElementById('vidProgress'), document.getElementById('vidProgressText'));
+    }
 
-    const { error } = await supabase.from('motorcycles').insert({ name, price: Number(price), description: desc, image_url, video_url });
+    // 写入数据库
+    const { error } = await supabase.from('motorcycles').insert({
+      name, price: Number(price), description: desc,
+      image_url: image_urls[0],
+      image_urls: image_urls,
+      video_url
+    });
     if (error) throw error;
 
     msg.className = 'msg ok'; msg.textContent = '✅ 车辆添加成功';
+    // 清空表单
     document.getElementById('mName').value = '';
     document.getElementById('mPrice').value = '';
     document.getElementById('mDesc').value = '';
-    document.getElementById('mImage').value = '';
+    document.getElementById('mImages').value = '';
     document.getElementById('mVideo').value = '';
+    document.getElementById('imgList').innerHTML = '';
+    document.getElementById('vidList').innerHTML = '';
+    document.getElementById('imgPreview').innerHTML = '';
     document.getElementById('imgProgress').style.display = 'none';
     document.getElementById('vidProgress').style.display = 'none';
+    document.getElementById('imgProgressText').style.display = 'none';
+    document.getElementById('vidProgressText').style.display = 'none';
     loadMotorcycles();
   } catch (e) {
     msg.className = 'msg err'; msg.textContent = '失败：' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '保存车辆';
   }
 };
 
@@ -212,20 +292,23 @@ async function loadMotorcycles() {
   if (error) { el.innerHTML = '加载失败：' + error.message; return; }
   if (!data || data.length === 0) { el.innerHTML = '<p style="color:#999">暂无车辆</p>'; return; }
 
-  el.innerHTML = data.map(m => `
+  el.innerHTML = data.map(m => {
+    const cover = (m.image_urls && m.image_urls[0]) || m.image_url || 'https://via.placeholder.com/80x60';
+    const imgCount = m.image_urls ? m.image_urls.length : (m.image_url ? 1 : 0);
+    return `
     <div class="item-row">
-      <img src="${m.image_url || 'https://via.placeholder.com/80x60'}" alt="">
+      <img src="${cover}" alt="">
       <div class="info">
         <h4>${m.name}</h4>
-        <p>¥${m.price}/天 · ${m.video_url ? '有视频' : '无视频'}</p>
+        <p>¥${m.price}/天 · ${imgCount}张图 · ${m.video_url ? '有视频' : '无视频'}</p>
       </div>
       <button class="del" onclick="delMotorcycle(${m.id})">删除</button>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 window.delMotorcycle = async function(id) {
-  if (!confirm('确定删除这台车吗？')) return;
+  if (!confirm('确定删除这台车吗？关联的租赁申请会保留但不再显示车辆名。')) return;
   const { error } = await supabase.from('motorcycles').delete().eq('id', id);
   if (error) alert('删除失败：' + error.message);
   else loadMotorcycles();
@@ -233,25 +316,38 @@ window.delMotorcycle = async function(id) {
 
 // ========== 租赁申请 ==========
 async function loadBookings() {
-  const { data, error } = await supabase.from('bookings').select('*, motorcycles(name)').order('created_at', { ascending: false });
+  const { data, error } = await supabase.from('bookings').select('*').order('created_at', { ascending: false });
   const el = document.getElementById('bookingList');
   if (error) { el.innerHTML = '加载失败：' + error.message; return; }
   if (!data || data.length === 0) { el.innerHTML = '<p style="color:#999">暂无申请</p>'; return; }
 
+  // 拿车辆名
+  const { data: motos } = await supabase.from('motorcycles').select('id, name');
+  const motoMap = {};
+  (motos || []).forEach(m => motoMap[m.id] = m.name);
+
   el.innerHTML = `<table>
-    <tr><th>车辆</th><th>姓名</th><th>电话</th><th>身份证</th><th>租期</th><th>备注</th></tr>
+    <tr><th>车辆</th><th>姓名</th><th>电话</th><th>身份证</th><th>租期</th><th>备注</th><th>操作</th></tr>
     ${data.map(b => `
       <tr>
-        <td>${b.motorcycles?.name || '-'}</td>
-        <td>${b.customer_name}</td>
-        <td>${b.phone}</td>
+        <td>${b.motorcycle_id && motoMap[b.motorcycle_id] ? motoMap[b.motorcycle_id] : '已删除'}</td>
+        <td>${b.customer_name || '-'}</td>
+        <td>${b.phone || '-'}</td>
         <td>${b.id_card || '-'}</td>
         <td>${b.start_date || '-'} ~ ${b.end_date || '-'}</td>
         <td>${b.note || '-'}</td>
+        <td><button class="del" onclick="delBooking(${b.id})">删除</button></td>
       </tr>
     `).join('')}
   </table>`;
 }
+
+window.delBooking = async function(id) {
+  if (!confirm('确定删除这条申请吗？')) return;
+  const { error } = await supabase.from('bookings').delete().eq('id', id);
+  if (error) alert('删除失败：' + error.message);
+  else loadBookings();
+};
 
 checkSession();
 </script>
