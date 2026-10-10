@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后台管理 - 机车租赁平台</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f5f7; color: #1d1d1f; }
+  header { background: #1d1d1f; color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+  header h1 { font-size: 20px; }
+  header button { background: #ff3b30; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+  .tabs button { padding: 10px 20px; border: none; background: #fff; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .tabs button.active { background: #1d1d1f; color: #fff; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .card h2 { font-size: 18px; margin-bottom: 16px; }
+  input, textarea, select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .btn { padding: 12px 24px; background: #1d1d1f; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .btn:hover { background: #333; }
+  .btn-red { background: #ff3b30; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+  th { background: #fafafa; font-weight: 600; }
+  .item-row { display: flex; gap: 16px; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+  .item-row img { width: 80px; height: 60px; object-fit: cover; border-radius: 6px; background: #eee; }
+  .item-row .info { flex: 1; }
+  .item-row .info h4 { font-size: 15px; margin-bottom: 4px; }
+  .item-row .info p { font-size: 13px; color: #666; }
+  .del { background: #ff3b30; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  .login-box { max-width: 400px; margin: 100px auto; background: #fff; padding: 32px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .login-box h2 { margin-bottom: 20px; text-align: center; }
+  .msg { padding: 12px; border-radius: 8px; margin-bottom: 12px; display: none; }
+  .msg.ok { background: #d4edda; color: #155724; display: block; }
+  .msg.err { background: #f8d7da; color: #721c24; display: block; }
+  .progress { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-top: 8px; display: none; }
+  .progress div { height: 100%; background: #1d1d1f; width: 0%; transition: width 0.3s; }
+</style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="loginView">
+  <div class="login-box">
+    <h2>🔐 管理员登录</h2>
+    <div class="msg" id="loginMsg"></div>
+    <input id="loginUser" placeholder="账号" autocomplete="username">
+    <input id="loginPass" type="password" placeholder="密码" autocomplete="current-password">
+    <button class="btn" style="width:100%" onclick="doLogin()">登录</button>
+  </div>
+</div>
+
+<!-- 后台主页 -->
+<div id="adminView" style="display:none">
+  <header>
+    <h1>🏍️ 机车租赁平台 - 后台</h1>
+    <button onclick="doLogout()">退出登录</button>
+  </header>
+  <div class="container">
+    <div class="tabs">
+      <button class="active" onclick="switchTab('tab-add', this)">添加车辆</button>
+      <button onclick="switchTab('tab-list', this)">车辆管理</button>
+      <button onclick="switchTab('tab-bookings', this)">租赁申请</button>
+    </div>
+
+    <!-- 添加车辆 -->
+    <div class="panel active" id="tab-add">
+      <div class="card">
+        <h2>添加新车辆</h2>
+        <div class="msg" id="addMsg"></div>
+        <input id="mName" placeholder="机车名称 *">
+        <input id="mPrice" type="number" placeholder="日租金（元）*">
+        <textarea id="mDesc" placeholder="文字介绍" rows="3"></textarea>
+        <label style="font-size:14px;color:#666">主图：</label>
+        <input id="mImage" type="file" accept="image/*">
+        <div class="progress" id="imgProgress"><div></div></div>
+        <label style="font-size:14px;color:#666">视频（可选）：</label>
+        <input id="mVideo" type="file" accept="video/*">
+        <div class="progress" id="vidProgress"><div></div></div>
+        <button class="btn" style="width:100%;margin-top:12px" onclick="addMotorcycle()">保存车辆</button>
+      </div>
+    </div>
+
+    <!-- 车辆管理 -->
+    <div class="panel" id="tab-list">
+      <div class="card">
+        <h2>已有车辆</h2>
+        <div id="motoList"></div>
+      </div>
+    </div>
+
+    <!-- 租赁申请 -->
+    <div class="panel" id="tab-bookings">
+      <div class="card">
+        <h2>客户租赁申请</h2>
+        <div id="bookingList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const SUPABASE_URL = "https://nekzrodpnqyubnmphybd.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5la3pyb2RwbnF5dWJubXBoeWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2Mzc2NTgsImV4cCI6MjEwNzIxMzY1OH0.L8MiwWm57boN2HOsunQTf-sWEiqceGGgj7VRbMWcZtY";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// 登录时把 YCL 转成 YCL@local.com
+function toEmail(u) {
+  return u.includes('@') ? u : u + '@local.com';
+}
+
+window.doLogin = async function() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const msg = document.getElementById('loginMsg');
+
+  if (!user || !pass) { msg.className='msg err'; msg.textContent='请输入账号和密码'; return; }
+
+  const { error } = await supabase.auth.signInWithPassword({ email: toEmail(user), password: pass });
+
+  if (error) { msg.className='msg err'; msg.textContent='登录失败：'+error.message; }
+  else { msg.className='msg ok'; msg.textContent='登录成功'; setTimeout(showAdmin, 500); }
+};
+
+window.doLogout = async function() {
+  await supabase.auth.signOut();
+  location.reload();
+};
+
+async function checkSession() {
+  const { data } = await supabase.auth.getSession();
+  if (data.session) showAdmin();
+}
+
+function showAdmin() {
+  document.getElementById('loginView').style.display = 'none';
+  document.getElementById('adminView').style.display = 'block';
+  loadMotorcycles();
+  loadBookings();
+}
+
+window.switchTab = function(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'tab-list') loadMotorcycles();
+  if (id === 'tab-bookings') loadBookings();
+};
+
+// ========== 上传文件 ==========
+async function uploadFile(file, bucket, progressEl) {
+  const ext = file.name.split('.').pop();
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  progressEl.style.display = 'block';
+  const bar = progressEl.querySelector('div');
+  bar.style.width = '30%';
+
+  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
+  bar.style.width = '100%';
+
+  if (error) throw error;
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+// ========== 添加车辆 ==========
+window.addMotorcycle = async function() {
+  const msg = document.getElementById('addMsg');
+  const name = document.getElementById('mName').value.trim();
+  const price = document.getElementById('mPrice').value;
+  const desc = document.getElementById('mDesc').value.trim();
+  const imgFile = document.getElementById('mImage').files[0];
+  const vidFile = document.getElementById('mVideo').files[0];
+
+  if (!name || !price) { msg.className='msg err'; msg.textContent='名称和价格必填'; return; }
+
+  try {
+    msg.className = 'msg ok'; msg.textContent = '正在上传...';
+
+    let image_url = null, video_url = null;
+    if (imgFile) image_url = await uploadFile(imgFile, 'motorcycle-images', document.getElementById('imgProgress'));
+    if (vidFile) video_url = await uploadFile(vidFile, 'motorcycle-videos', document.getElementById('vidProgress'));
+
+    const { error } = await supabase.from('motorcycles').insert({ name, price: Number(price), description: desc, image_url, video_url });
+    if (error) throw error;
+
+    msg.className = 'msg ok'; msg.textContent = '✅ 车辆添加成功';
+    document.getElementById('mName').value = '';
+    document.getElementById('mPrice').value = '';
+    document.getElementById('mDesc').value = '';
+    document.getElementById('mImage').value = '';
+    document.getElementById('mVideo').value = '';
+    document.getElementById('imgProgress').style.display = 'none';
+    document.getElementById('vidProgress').style.display = 'none';
+    loadMotorcycles();
+  } catch (e) {
+    msg.className = 'msg err'; msg.textContent = '失败：' + e.message;
+  }
+};
+
+// ========== 车辆列表 ==========
+async function loadMotorcycles() {
+  const { data, error } = await supabase.from('motorcycles').select('*').order('created_at', { ascending: false });
+  const el = document.getElementById('motoList');
+  if (error) { el.innerHTML = '加载失败：' + error.message; return; }
+  if (!data || data.length === 0) { el.innerHTML = '<p style="color:#999">暂无车辆</p>'; return; }
+
+  el.innerHTML = data.map(m => `
+    <div class="item-row">
+      <img src="${m.image_url || 'https://via.placeholder.com/80x60'}" alt="">
+      <div class="info">
+        <h4>${m.name}</h4>
+        <p>¥${m.price}/天 · ${m.video_url ? '有视频' : '无视频'}</p>
+      </div>
+      <button class="del" onclick="delMotorcycle(${m.id})">删除</button>
+    </div>
+  `).join('');
+}
+
+window.delMotorcycle = async function(id) {
+  if (!confirm('确定删除这台车吗？')) return;
+  const { error } = await supabase.from('motorcycles').delete().eq('id', id);
+  if (error) alert('删除失败：' + error.message);
+  else loadMotorcycles();
+};
+
+// ========== 租赁申请 ==========
+async function loadBookings() {
+  const { data, error } = await supabase.from('bookings').select('*, motorcycles(name)').order('created_at', { ascending: false });
+  const el = document.getElementById('bookingList');
+  if (error) { el.innerHTML = '加载失败：' + error.message; return; }
+  if (!data || data.length === 0) { el.innerHTML = '<p style="color:#999">暂无申请</p>'; return; }
+
+  el.innerHTML = `<table>
+    <tr><th>车辆</th><th>姓名</th><th>电话</th><th>身份证</th><th>租期</th><th>备注</th></tr>
+    ${data.map(b => `
+      <tr>
+        <td>${b.motorcycles?.name || '-'}</td>
+        <td>${b.customer_name}</td>
+        <td>${b.phone}</td>
+        <td>${b.id_card || '-'}</td>
+        <td>${b.start_date || '-'} ~ ${b.end_date || '-'}</td>
+        <td>${b.note || '-'}</td>
+      </tr>
+    `).join('')}
+  </table>`;
+}
+
+checkSession();
+</script>
+</body>
+</html>
