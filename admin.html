@@ -45,8 +45,6 @@
   .file-list div { padding: 4px 0; }
   .preview { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
   .preview img { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
-  .status-pending { color: #ff9500; font-weight: 600; }
-  .status-approved { color: #34c759; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -122,6 +120,9 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// 登录 token（上传文件时要用）
+let adminToken = null;
+
 function toEmail(u) { return u.includes('@') ? u : u + '@local.com'; }
 
 window.doLogin = async function() {
@@ -130,16 +131,23 @@ window.doLogin = async function() {
   const msg = document.getElementById('loginMsg');
   if (!user || !pass) { msg.className='msg err'; msg.textContent='请输入账号和密码'; return; }
 
-  const { error } = await supabase.auth.signInWithPassword({ email: toEmail(user), password: pass });
+  const { data, error } = await supabase.auth.signInWithPassword({ email: toEmail(user), password: pass });
   if (error) { msg.className='msg err'; msg.textContent='登录失败：'+error.message; }
-  else { msg.className='msg ok'; msg.textContent='登录成功'; setTimeout(showAdmin, 500); }
+  else {
+    adminToken = data.session.access_token;
+    msg.className='msg ok'; msg.textContent='登录成功';
+    setTimeout(showAdmin, 500);
+  }
 };
 
 window.doLogout = async function() { await supabase.auth.signOut(); location.reload(); };
 
 async function checkSession() {
   const { data } = await supabase.auth.getSession();
-  if (data.session) showAdmin();
+  if (data.session) {
+    adminToken = data.session.access_token;
+    showAdmin();
+  }
 }
 
 function showAdmin() {
@@ -175,7 +183,7 @@ document.getElementById('mVideo').addEventListener('change', function(e) {
   document.getElementById('vidList').innerHTML = f ? `<div>🎬 ${f.name} (${(f.size/1024/1024).toFixed(2)} MB)</div>` : '';
 });
 
-// ========== 上传（带真实百分比进度） ==========
+// ========== 上传（带 token + 真实百分比进度） ==========
 function uploadFile(file, bucket, progressEl, textEl) {
   return new Promise((resolve, reject) => {
     const ext = file.name.split('.').pop();
@@ -188,7 +196,8 @@ function uploadFile(file, bucket, progressEl, textEl) {
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', url, true);
-    xhr.setRequestHeader('Authorization', `Bearer ${SUPABASE_ANON_KEY}`);
+    // 关键：用登录后的 access_token，而不是 anon key
+    xhr.setRequestHeader('Authorization', `Bearer ${adminToken}`);
     xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
     xhr.setRequestHeader('x-upsert', 'false');
 
@@ -237,7 +246,6 @@ window.addMotorcycle = async function() {
   msg.className = 'msg ok'; msg.textContent = '正在上传，请勿关闭页面...';
 
   try {
-    // 上传所有图片
     const image_urls = [];
     for (let i = 0; i < imgFiles.length; i++) {
       document.getElementById('imgProgressText').textContent = `第 ${i+1}/${imgFiles.length} 张`;
@@ -246,14 +254,12 @@ window.addMotorcycle = async function() {
       image_urls.push(url);
     }
 
-    // 上传视频
     let video_url = null;
     if (vidFile) {
       video_url = await uploadFile(vidFile, 'motorcycle-videos',
         document.getElementById('vidProgress'), document.getElementById('vidProgressText'));
     }
 
-    // 写入数据库
     const { error } = await supabase.from('motorcycles').insert({
       name, price: Number(price), description: desc,
       image_url: image_urls[0],
@@ -263,7 +269,6 @@ window.addMotorcycle = async function() {
     if (error) throw error;
 
     msg.className = 'msg ok'; msg.textContent = '✅ 车辆添加成功';
-    // 清空表单
     document.getElementById('mName').value = '';
     document.getElementById('mPrice').value = '';
     document.getElementById('mDesc').value = '';
@@ -308,7 +313,7 @@ async function loadMotorcycles() {
 }
 
 window.delMotorcycle = async function(id) {
-  if (!confirm('确定删除这台车吗？关联的租赁申请会保留但不再显示车辆名。')) return;
+  if (!confirm('确定删除这台车吗？关联的租赁申请会保留。')) return;
   const { error } = await supabase.from('motorcycles').delete().eq('id', id);
   if (error) alert('删除失败：' + error.message);
   else loadMotorcycles();
@@ -321,7 +326,6 @@ async function loadBookings() {
   if (error) { el.innerHTML = '加载失败：' + error.message; return; }
   if (!data || data.length === 0) { el.innerHTML = '<p style="color:#999">暂无申请</p>'; return; }
 
-  // 拿车辆名
   const { data: motos } = await supabase.from('motorcycles').select('id, name');
   const motoMap = {};
   (motos || []).forEach(m => motoMap[m.id] = m.name);
