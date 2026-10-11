@@ -6,99 +6,452 @@
 <title>后台管理 - 机车租赁平台</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f5f7; color: #1d1d1f; }
-  header { background: #1d1d1f; color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
-  header h1 { font-size: 20px; }
-  header button { background: #ff3b30; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; }
-  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
-  .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
-  .tabs button { padding: 10px 20px; border: none; background: #fff; border-radius: 8px; cursor: pointer; font-size: 14px; }
-  .tabs button.active { background: #1d1d1f; color: #fff; }
-  .panel { display: none; }
+  :root {
+    --bg: #0f0f12;
+    --card: #1a1a1f;
+    --card-hover: #22222a;
+    --text: #f5f5f7;
+    --text-dim: #8e8e93;
+    --accent: #ff453a;
+    --accent-2: #ff6b5e;
+    --border: #2a2a32;
+    --success: #30d158;
+    --warning: #ff9f0a;
+  }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 20% 10%, rgba(255,69,58,0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 90%, rgba(90,120,255,0.05) 0%, transparent 50%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* 登录 */
+  .login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .login-box {
+    max-width: 420px;
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    animation: loginIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes loginIn {
+    from { transform: scale(0.9) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  .login-box h2 {
+    font-size: 24px;
+    margin-bottom: 28px;
+    text-align: center;
+    background: linear-gradient(135deg, #fff, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  input, textarea, select {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: inherit;
+    transition: all 0.25s;
+  }
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255,69,58,0.15);
+  }
+  input::placeholder, textarea::placeholder { color: #555; }
+  label { font-size: 13px; color: var(--text-dim); display: block; margin-bottom: 8px; font-weight: 500; }
+
+  .btn {
+    padding: 14px 24px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.25s;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,69,58,0.3); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-full { width: 100%; }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--accent); background: rgba(255,69,58,0.1); }
+
+  /* 头部 */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(15,15,18,0.75);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideDown 0.5s ease;
+  }
+  @keyframes slideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .logout-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.25s;
+  }
+  .logout-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  .container { max-width: 1300px; margin: 0 auto; padding: 32px; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    background: var(--card);
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    width: fit-content;
+    animation: fadeUp 0.5s ease 0.1s both;
+  }
+  @keyframes fadeUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .tabs button {
+    padding: 10px 24px;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.25s;
+  }
+  .tabs button:hover { color: var(--text); }
+  .tabs button.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(255,69,58,0.3);
+  }
+
+  .panel { display: none; animation: fadeUp 0.4s ease; }
   .panel.active { display: block; }
-  .card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-  .card h2 { font-size: 18px; margin-bottom: 16px; }
-  input, textarea, select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; }
-  label { font-size: 14px; color: #666; display: block; margin-bottom: 6px; }
-  .btn { padding: 12px 24px; background: #1d1d1f; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
-  .btn:hover { background: #333; }
-  .btn:disabled { background: #999; cursor: not-allowed; }
-  .btn-red { background: #ff3b30; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-  th { background: #fafafa; font-weight: 600; }
-  .item-row { display: flex; gap: 16px; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-  .item-row img { width: 80px; height: 60px; object-fit: cover; border-radius: 6px; background: #eee; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.5s ease;
+  }
+  .card h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card h2::before {
+    content: '';
+    width: 4px;
+    height: 18px;
+    background: linear-gradient(180deg, var(--accent), var(--accent-2));
+    border-radius: 2px;
+  }
+
+  /* 文件选择 */
+  .file-zone {
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .file-zone:hover {
+    border-color: var(--accent);
+    background: rgba(255,69,58,0.05);
+  }
+  .file-zone input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    margin: 0;
+  }
+  .file-zone .icon { font-size: 32px; margin-bottom: 8px; opacity: 0.5; }
+  .file-zone .hint { font-size: 13px; color: var(--text-dim); }
+
+  .file-list { font-size: 13px; color: var(--text-dim); margin-bottom: 12px; }
+  .file-list div {
+    padding: 6px 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .preview { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .preview img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    transition: all 0.25s;
+    animation: popIn 0.3s cubic-bezier(0.2, 1.5, 0.5, 1);
+  }
+  @keyframes popIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .preview img:hover { border-color: var(--accent); transform: scale(1.05); }
+
+  .progress {
+    height: 8px;
+    background: var(--bg);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+    display: none;
+  }
+  .progress div {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    width: 0%;
+    transition: width 0.2s;
+    border-radius: 4px;
+  }
+  .progress-text { font-size: 12px; color: var(--text-dim); text-align: right; margin-bottom: 12px; display: none; }
+
+  /* 车辆列表 */
+  .item-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 16px;
+    border-radius: 14px;
+    background: var(--bg);
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    transition: all 0.25s;
+    animation: fadeUp 0.4s ease;
+  }
+  .item-row:hover {
+    border-color: rgba(255,69,58,0.3);
+    transform: translateX(4px);
+  }
+  .item-row img {
+    width: 90px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 10px;
+    background: #222;
+  }
   .item-row .info { flex: 1; }
-  .item-row .info h4 { font-size: 15px; margin-bottom: 4px; }
-  .item-row .info p { font-size: 13px; color: #666; }
-  .del { background: #ff3b30; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
-  .login-box { max-width: 400px; margin: 100px auto; background: #fff; padding: 32px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-  .login-box h2 { margin-bottom: 20px; text-align: center; }
-  .msg { padding: 12px; border-radius: 8px; margin-bottom: 12px; display: none; }
-  .msg.ok { background: #d4edda; color: #155724; display: block; }
-  .msg.err { background: #f8d7da; color: #721c24; display: block; }
-  .progress { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin: 6px 0 14px; display: none; position: relative; }
-  .progress div { height: 100%; background: #1d1d1f; width: 0%; transition: width 0.2s; }
-  .progress-text { font-size: 12px; color: #666; text-align: right; margin-top: -10px; margin-bottom: 10px; display: none; }
-  .file-list { font-size: 13px; color: #666; margin-bottom: 10px; }
-  .file-list div { padding: 4px 0; }
-  .preview { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  .preview img { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
+  .item-row .info h4 { font-size: 15px; margin-bottom: 6px; font-weight: 600; }
+  .item-row .info p { font-size: 13px; color: var(--text-dim); }
+
+  .checkbox {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .checkbox:hover { border-color: var(--accent); }
+  .checkbox.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .checkbox.checked::after { content: '✓'; font-size: 14px; font-weight: 700; }
+
+  .del {
+    background: rgba(255,69,58,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(255,69,58,0.3);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.25s;
+  }
+  .del:hover { background: var(--accent); color: #fff; }
+
+  /* 批量操作栏 */
+  .batch-bar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, rgba(255,69,58,0.15), rgba(255,107,94,0.1));
+    border: 1px solid rgba(255,69,58,0.3);
+    border-radius: 14px;
+    margin-bottom: 16px;
+    animation: slideDown 0.3s ease;
+  }
+  .batch-bar.show { display: flex; }
+  .batch-bar .count { font-size: 14px; }
+  .batch-bar .count strong { color: var(--accent); font-size: 16px; }
+
+  /* 表格 */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: var(--bg); font-weight: 600; color: var(--text-dim); font-size: 13px; }
+  tbody tr { transition: background 0.2s; }
+  tbody tr:hover { background: rgba(255,69,58,0.04); }
+
+  .msg {
+    padding: 14px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    display: none;
+    font-size: 14px;
+    animation: fadeUp 0.3s ease;
+  }
+  .msg.ok { background: rgba(48,209,88,0.15); color: var(--success); display: block; border: 1px solid rgba(48,209,88,0.3); }
+  .msg.err { background: rgba(255,69,58,0.15); color: var(--accent); display: block; border: 1px solid rgba(255,69,58,0.3); }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-dim); font-size: 14px; }
+  .empty .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+
+  @media (max-width: 640px) {
+    header { padding: 14px 20px; }
+    header h1 { font-size: 16px; }
+    .container { padding: 20px; }
+    .card { padding: 20px; }
+    .tabs { width: 100%; overflow-x: auto; }
+    .tabs button { padding: 10px 16px; font-size: 13px; white-space: nowrap; }
+    .item-row { flex-wrap: wrap; }
+    .item-row img { width: 70px; height: 55px; }
+  }
 </style>
 </head>
 <body>
 
-<div id="loginView">
+<div id="loginView" class="login-wrap">
   <div class="login-box">
     <h2>🔐 管理员登录</h2>
     <div class="msg" id="loginMsg"></div>
     <input id="loginUser" placeholder="账号" autocomplete="username">
     <input id="loginPass" type="password" placeholder="密码" autocomplete="current-password">
-    <button class="btn" style="width:100%" onclick="doLogin()">登录</button>
+    <button class="btn btn-full" onclick="doLogin()">登录</button>
   </div>
 </div>
 
 <div id="adminView" style="display:none">
   <header>
-    <h1>🏍️ 机车租赁平台 - 后台</h1>
-    <button onclick="doLogout()">退出登录</button>
+    <h1>🏍️ 机车租赁平台 · 后台</h1>
+    <button class="logout-btn" onclick="doLogout()">退出登录</button>
   </header>
   <div class="container">
     <div class="tabs">
-      <button class="active" onclick="switchTab('tab-add', this)">添加车辆</button>
-      <button onclick="switchTab('tab-list', this)">车辆管理</button>
-      <button onclick="switchTab('tab-bookings', this)">租赁申请</button>
+      <button class="active" onclick="switchTab('tab-add', this)">➕ 添加车辆</button>
+      <button onclick="switchTab('tab-list', this)">🏍️ 车辆管理</button>
+      <button onclick="switchTab('tab-bookings', this)">📋 租赁申请</button>
     </div>
 
     <div class="panel active" id="tab-add">
       <div class="card">
         <h2>添加新车辆</h2>
         <div class="msg" id="addMsg"></div>
+
         <input id="mName" placeholder="机车名称 *">
         <input id="mPrice" type="number" placeholder="日租金（元）*">
         <textarea id="mDesc" placeholder="文字介绍" rows="3"></textarea>
 
         <label>主图（可多选，第一张为封面）*</label>
-        <input id="mImages" type="file" accept="image/*" multiple>
+        <div class="file-zone">
+          <input id="mImages" type="file" accept="image/*" multiple>
+          <div class="icon">🖼️</div>
+          <div class="hint">点击或拖拽上传图片（可多选）</div>
+        </div>
         <div class="file-list" id="imgList"></div>
         <div class="preview" id="imgPreview"></div>
         <div class="progress" id="imgProgress"><div></div></div>
         <div class="progress-text" id="imgProgressText"></div>
 
         <label>视频（可选，1个）</label>
-        <input id="mVideo" type="file" accept="video/*">
+        <div class="file-zone">
+          <input id="mVideo" type="file" accept="video/*">
+          <div class="icon">🎬</div>
+          <div class="hint">点击或拖拽上传视频</div>
+        </div>
         <div class="file-list" id="vidList"></div>
         <div class="progress" id="vidProgress"><div></div></div>
         <div class="progress-text" id="vidProgressText"></div>
 
-        <button class="btn" style="width:100%;margin-top:12px" id="addBtn" onclick="addMotorcycle()">保存车辆</button>
+        <button class="btn btn-full" style="margin-top:12px" id="addBtn" onclick="addMotorcycle()">保存车辆</button>
       </div>
     </div>
 
     <div class="panel" id="tab-list">
       <div class="card">
-        <h2>已有车辆</h2>
+        <h2>车辆管理</h2>
+        <div class="batch-bar" id="motoBatchBar">
+          <div class="count">已选中 <strong id="motoCount">0</strong> 项</div>
+          <button class="del" onclick="batchDeleteMotos()">批量删除</button>
+        </div>
         <div id="motoList"></div>
       </div>
     </div>
@@ -106,6 +459,10 @@
     <div class="panel" id="tab-bookings">
       <div class="card">
         <h2>客户租赁申请</h2>
+        <div class="batch-bar" id="bookingBatchBar">
+          <div class="count">已选中 <strong id="bookingCount">0</strong> 项</div>
+          <button class="del" onclick="batchDeleteBookings()">批量删除</button>
+        </div>
         <div id="bookingList"></div>
       </div>
     </div>
@@ -119,9 +476,11 @@ const SUPABASE_URL = "https://nekzrodpnqyubnmphybd.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5la3pyb2RwbnF5dWJubXBoeWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2Mzc2NTgsImV4cCI6MjEwNzIxMzY1OH0.L8MiwWm57boN2HOsunQTf-sWEiqceGGgj7VRbMWcZtY";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// 登录 token（上传文件时要用）
 let adminToken = null;
+
+// 选中的 ID 集合
+const selectedMotos = new Set();
+const selectedBookings = new Set();
 
 function toEmail(u) { return u.includes('@') ? u : u + '@local.com'; }
 
@@ -136,7 +495,7 @@ window.doLogin = async function() {
   else {
     adminToken = data.session.access_token;
     msg.className='msg ok'; msg.textContent='登录成功';
-    setTimeout(showAdmin, 500);
+    setTimeout(showAdmin, 400);
   }
 };
 
@@ -169,7 +528,8 @@ window.switchTab = function(id, btn) {
 // ========== 文件预览 ==========
 document.getElementById('mImages').addEventListener('change', function(e) {
   const files = Array.from(e.target.files);
-  document.getElementById('imgList').innerHTML = files.map(f => `<div>📷 ${f.name} (${(f.size/1024/1024).toFixed(2)} MB)</div>`).join('');
+  document.getElementById('imgList').innerHTML = files.map(f =>
+    `<div><span>📷 ${f.name}</span><span>${(f.size/1024/1024).toFixed(2)} MB</span></div>`).join('');
   const preview = document.getElementById('imgPreview');
   preview.innerHTML = '';
   files.forEach(f => {
@@ -180,10 +540,11 @@ document.getElementById('mImages').addEventListener('change', function(e) {
 
 document.getElementById('mVideo').addEventListener('change', function(e) {
   const f = e.target.files[0];
-  document.getElementById('vidList').innerHTML = f ? `<div>🎬 ${f.name} (${(f.size/1024/1024).toFixed(2)} MB)</div>` : '';
+  document.getElementById('vidList').innerHTML = f
+    ? `<div><span>🎬 ${f.name}</span><span>${(f.size/1024/1024).toFixed(2)} MB</span></div>` : '';
 });
 
-// ========== 上传（带 token + 真实百分比进度） ==========
+// ========== 上传 ==========
 function uploadFile(file, bucket, progressEl, textEl) {
   return new Promise((resolve, reject) => {
     const ext = file.name.split('.').pop();
@@ -196,7 +557,6 @@ function uploadFile(file, bucket, progressEl, textEl) {
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', url, true);
-    // 关键：用登录后的 access_token，而不是 anon key
     xhr.setRequestHeader('Authorization', `Bearer ${adminToken}`);
     xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
     xhr.setRequestHeader('x-upsert', 'false');
@@ -221,7 +581,6 @@ function uploadFile(file, bucket, progressEl, textEl) {
     };
 
     xhr.onerror = () => reject(new Error('网络错误'));
-
     const formData = new FormData();
     formData.append('file', file);
     xhr.send(formData);
@@ -290,18 +649,25 @@ window.addMotorcycle = async function() {
   }
 };
 
-// ========== 车辆列表 ==========
+// ========== 车辆列表（带批量选择） ==========
 async function loadMotorcycles() {
   const { data, error } = await supabase.from('motorcycles').select('*').order('created_at', { ascending: false });
   const el = document.getElementById('motoList');
-  if (error) { el.innerHTML = '加载失败：' + error.message; return; }
-  if (!data || data.length === 0) { el.innerHTML = '<p style="color:#999">暂无车辆</p>'; return; }
+  selectedMotos.clear();
+  updateMotoBatchBar();
+
+  if (error) { el.innerHTML = '<div class="empty">加载失败：' + error.message + '</div>'; return; }
+  if (!data || data.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="icon">🏍️</div>暂无车辆</div>';
+    return;
+  }
 
   el.innerHTML = data.map(m => {
-    const cover = (m.image_urls && m.image_urls[0]) || m.image_url || 'https://via.placeholder.com/80x60';
+    const cover = (m.image_urls && m.image_urls[0]) || m.image_url || 'https://via.placeholder.com/90x70';
     const imgCount = m.image_urls ? m.image_urls.length : (m.image_url ? 1 : 0);
     return `
     <div class="item-row">
+      <div class="checkbox" onclick="toggleMoto(${m.id}, this)"></div>
       <img src="${cover}" alt="">
       <div class="info">
         <h4>${m.name}</h4>
@@ -312,29 +678,70 @@ async function loadMotorcycles() {
   }).join('');
 }
 
+window.toggleMoto = function(id, el) {
+  if (selectedMotos.has(id)) {
+    selectedMotos.delete(id);
+    el.classList.remove('checked');
+  } else {
+    selectedMotos.add(id);
+    el.classList.add('checked');
+  }
+  updateMotoBatchBar();
+};
+
+function updateMotoBatchBar() {
+  const bar = document.getElementById('motoBatchBar');
+  document.getElementById('motoCount').textContent = selectedMotos.size;
+  bar.classList.toggle('show', selectedMotos.size > 0);
+}
+
 window.delMotorcycle = async function(id) {
-  if (!confirm('确定删除这台车吗？关联的租赁申请会保留。')) return;
+  if (!confirm('确定删除这台车吗？')) return;
   const { error } = await supabase.from('motorcycles').delete().eq('id', id);
   if (error) alert('删除失败：' + error.message);
   else loadMotorcycles();
 };
 
-// ========== 租赁申请 ==========
+window.batchDeleteMotos = async function() {
+  if (selectedMotos.size === 0) return;
+  if (!confirm(`确定删除选中的 ${selectedMotos.size} 台车辆吗？`)) return;
+
+  const ids = Array.from(selectedMotos);
+  const { error } = await supabase.from('motorcycles').delete().in('id', ids);
+  if (error) { alert('批量删除失败：' + error.message); return; }
+  selectedMotos.clear();
+  loadMotorcycles();
+};
+
+// ========== 租赁申请（带批量选择） ==========
 async function loadBookings() {
   const { data, error } = await supabase.from('bookings').select('*').order('created_at', { ascending: false });
   const el = document.getElementById('bookingList');
-  if (error) { el.innerHTML = '加载失败：' + error.message; return; }
-  if (!data || data.length === 0) { el.innerHTML = '<p style="color:#999">暂无申请</p>'; return; }
+  selectedBookings.clear();
+  updateBookingBatchBar();
+
+  if (error) { el.innerHTML = '<div class="empty">加载失败：' + error.message + '</div>'; return; }
+  if (!data || data.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="icon">📋</div>暂无申请</div>';
+    return;
+  }
 
   const { data: motos } = await supabase.from('motorcycles').select('id, name');
   const motoMap = {};
   (motos || []).forEach(m => motoMap[m.id] = m.name);
 
   el.innerHTML = `<table>
-    <tr><th>车辆</th><th>姓名</th><th>电话</th><th>身份证</th><th>租期</th><th>备注</th><th>操作</th></tr>
+    <thead>
+      <tr>
+        <th style="width:40px"></th>
+        <th>车辆</th><th>姓名</th><th>电话</th><th>身份证</th><th>租期</th><th>备注</th><th style="width:80px">操作</th>
+      </tr>
+    </thead>
+    <tbody>
     ${data.map(b => `
       <tr>
-        <td>${b.motorcycle_id && motoMap[b.motorcycle_id] ? motoMap[b.motorcycle_id] : '已删除'}</td>
+        <td><div class="checkbox" onclick="toggleBooking(${b.id}, this)"></div></td>
+        <td>${b.motorcycle_id && motoMap[b.motorcycle_id] ? motoMap[b.motorcycle_id] : '<span style="color:#666">已删除</span>'}</td>
         <td>${b.customer_name || '-'}</td>
         <td>${b.phone || '-'}</td>
         <td>${b.id_card || '-'}</td>
@@ -343,7 +750,25 @@ async function loadBookings() {
         <td><button class="del" onclick="delBooking(${b.id})">删除</button></td>
       </tr>
     `).join('')}
+    </tbody>
   </table>`;
+}
+
+window.toggleBooking = function(id, el) {
+  if (selectedBookings.has(id)) {
+    selectedBookings.delete(id);
+    el.classList.remove('checked');
+  } else {
+    selectedBookings.add(id);
+    el.classList.add('checked');
+  }
+  updateBookingBatchBar();
+};
+
+function updateBookingBatchBar() {
+  const bar = document.getElementById('bookingBatchBar');
+  document.getElementById('bookingCount').textContent = selectedBookings.size;
+  bar.classList.toggle('show', selectedBookings.size > 0);
 }
 
 window.delBooking = async function(id) {
@@ -351,6 +776,17 @@ window.delBooking = async function(id) {
   const { error } = await supabase.from('bookings').delete().eq('id', id);
   if (error) alert('删除失败：' + error.message);
   else loadBookings();
+};
+
+window.batchDeleteBookings = async function() {
+  if (selectedBookings.size === 0) return;
+  if (!confirm(`确定删除选中的 ${selectedBookings.size} 条申请吗？`)) return;
+
+  const ids = Array.from(selectedBookings);
+  const { error } = await supabase.from('bookings').delete().in('id', ids);
+  if (error) { alert('批量删除失败：' + error.message); return; }
+  selectedBookings.clear();
+  loadBookings();
 };
 
 checkSession();
